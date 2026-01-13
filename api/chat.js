@@ -1,4 +1,11 @@
 export default async function handler(req, res) {
+    const ACCESS_CODE = process.env.ACCESS_CODE;
+    const clientCode = req.headers["x-access-code"];
+
+  if (!ACCESS_CODE || clientCode !== ACCESS_CODE) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {

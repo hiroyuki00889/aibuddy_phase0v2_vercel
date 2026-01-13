@@ -46,3 +46,28 @@ input:focus { outline: none; border-color: rgba(99,179,237,0.6); }
 }
 .modalActions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 12px; }
 .closing { opacity: 0.9; }
+.gate {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: grid;
+  place-items: center;
+  z-index: 10;
+}
+
+.gateCard {
+  background: #0f1620;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 20px;
+  width: min(360px, 90%);
+  text-align: center;
+}
+
+.error {
+  color: #ff6b6b;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.hidden { display: none; }
