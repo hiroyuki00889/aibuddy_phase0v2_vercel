@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>相棒AI（第一形態）</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div>
+        <h1>相棒AI（第一形態）</h1>
+        <p class="sub">あなたの相棒として何でも聞きたい</p>
+      </div>
+      <button id="endBtn" class="btn ghost">セッション終了</button>
+    </header>
+
+    <main id="chat" class="chat" aria-live="polite"></main>
+
+    <footer class="composer">
+      <input id="input" type="text" placeholder="今の気持ちを一言でも…" autocomplete="off" />
+      <button id="sendBtn" class="btn">送信</button>
+    </footer>
+  </div>
+
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modalCard">
+      <h2>今日を閉じる</h2>
+      <p id="closingText" class="closing"></p>
+      <div class="modalActions">
+        <button id="resetBtn" class="btn">新しい会話を始める</button>
+        <button id="closeBtn" class="btn ghost">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
