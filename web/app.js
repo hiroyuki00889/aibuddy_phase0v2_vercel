@@ -121,5 +121,3 @@ endBtn.addEventListener("click", endSession);
 
 resetBtn.addEventListener("click", reset);
 closeBtn.addEventListener("click", () => modal.classList.add("hidden"));
-
-boot();
