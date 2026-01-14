@@ -27,16 +27,6 @@ const API_BASE = ""; // これで同一ドメインに投げる
 let accessCode = "";
 let messages = []; // OpenAI形式: {role:"user"|"assistant", content:"..."}
 
-const res = await fetch("/api/chat", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "x-access-code": accessCode
-  },
-  body: JSON.stringify({ messages })
-});
-
-
 function addBubble(text, who) {
   const div = document.createElement("div");
   div.className = `bubble ${who}`;
