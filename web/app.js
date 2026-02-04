@@ -16,15 +16,30 @@ const passError = document.getElementById("passError");
 passBtn.addEventListener("click", () => {
   const v = passInput.value.trim();
   if (!v) return;
+  // 合言葉OK時
   accessCode = v;
-  gate.style.display = "none";
-  boot(); // 最初の「今日はどんな夜？」を表示
+  gate.classList.add("hidden");
+
+  // 追加：
+  document.getElementById("modeGate").classList.remove("hidden");
+  const modeGate = document.getElementById("modeGate");
+  document.getElementById("modeThink").addEventListener("click", () => {
+  mode = "think";
+  modeGate.classList.add("hidden");
+  resetSession();
+  });
+  document.getElementById("modeChat").addEventListener("click", () => {
+  mode = "chat";
+  modeGate.classList.add("hidden");
+  resetSession();
+  });
 });
 
 // ここだけ自分の環境に合わせて
 const API_BASE = ""; // これで同一ドメインに投げる
 
 let accessCode = "";
+let mode = ""; // "think" | "chat"
 let messages = []; // OpenAI形式: {role:"user"|"assistant", content:"..."}
 
 function addBubble(text, who) {
@@ -49,7 +64,7 @@ async function apiChat() {
       "Content-Type": "application/json",
       "x-access-code": accessCode
      },
-    body: JSON.stringify({ messages })
+    body: JSON.stringify({ messages, mode }),
   });
   if (!res.ok) {
     const text = await res.text();
@@ -61,6 +76,17 @@ async function apiChat() {
 
 function boot() {
   addBubble("なんでも話して？", "ai");
+}
+
+function resetSession(){
+  chatEl.innerHTML = "";
+  messages = [];
+
+  if(mode === "think"){
+    addBubble("5分で整理しよう。いま考えをまとめたいテーマを一言で教えて。", "ai");
+  }else{
+    addBubble("やあ！今日は何話す？", "ai");
+  }
 }
 
 async function send() {
