@@ -6,6 +6,45 @@ body { margin: 0; background: #0b0f14; color: #e9eef5; }
   display: flex; align-items: center; justify-content: space-between;
   padding: 16px 16px 8px; border-bottom: 1px solid rgba(255,255,255,0.08);
 }
+
+.headerRight{
+  display:flex; align-items:center; gap:10px;
+}
+
+.mode{ display:flex; gap:8px; }
+
+.chip{
+  padding: 8px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.chip.active{
+  border-color: rgba(99,179,237,0.8);
+  background: rgba(99, 179, 237, 0.16);
+}
+
+.timer{
+  display:flex; flex-direction:column; align-items:flex-end;
+  gap:6px; min-width: 86px;
+}
+
+#timerText{ font-variant-numeric: tabular-nums; font-size: 12px; opacity: 0.85; }
+
+.progress{
+  width: 86px; height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bar{
+  height: 100%; width: 0%;
+  background: rgba(99,179,237,0.7);
+  transition: width 200ms linear;
+}
+
 h1 { margin: 0; font-size: 18px; }
 .sub { margin: 4px 0 0; opacity: 0.75; font-size: 12px; }
 
@@ -37,12 +76,6 @@ input:focus { outline: none; border-color: rgba(99,179,237,0.6); }
 }
 .btn:hover { background: rgba(255,255,255,0.12); }
 .ghost { background: transparent; }
-.modeBtns{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  margin-top:12px;
-}
 
 .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: grid; place-items: center; padding: 18px; }
 .modal.hidden { display: none; }
@@ -52,6 +85,7 @@ input:focus { outline: none; border-color: rgba(99,179,237,0.6); }
 }
 .modalActions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 12px; }
 .closing { opacity: 0.9; }
+
 .gate {
   position: fixed;
   inset: 0;

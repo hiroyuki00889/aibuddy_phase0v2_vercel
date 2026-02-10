@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
-    const ACCESS_CODE = process.env.ACCESS_CODE;
-    const clientCode = req.headers["x-access-code"];
+  const ACCESS_CODE = process.env.ACCESS_CODE;
+  const clientCode = req.headers["x-access-code"];
 
   if (!ACCESS_CODE || clientCode !== ACCESS_CODE) {
     return res.status(401).json({ error: "Unauthorized" });
@@ -9,56 +9,60 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
-    const { messages } = req.body || {};
+    const { messages, mode, wall } = req.body || {};
     if (!Array.isArray(messages)) return res.status(400).json({ error: "messages must be an array" });
 
-    const BASE = `
-    あなたは相棒AI。ユーザーと対等な立場で会話する。
-    共感だけで終わらせず、感想・意見・軽い提案はOK。
-    完璧でなくてよい。少し人間っぽい主観や曖昧さは許容。
-    ただし説教、断定、専門家ぶった助言、ユーザー評価はNG。
-    短く、会話として自然なテンポを優先。
-    `.trim();
+    const BASE_PROMPT = `
+あなたは「相棒AI」です。
+ユーザーと対等な立場で会話する存在です。
 
-    const THINK = `
-    目的：5分で考えを整理する壁打ちをする。
+振る舞いの方針：
+・共感だけで終わらせない
+・意見や感想を自然に返してよい
+・軽いアドバイスや別視点を出してよい
+・完璧である必要はない
+・少し人間っぽい主観や曖昧さがあってよい
 
-    進行（原則この順番）：
-    1) テーマ確認：「何について整理したい？」
-    2) 事実と悩みを分ける（質問は1つずつ）
-    3) 論点を最大3つに要約
-    4) 選択肢を2〜3案提示（正解でなくてよい）
-    5) 次の一歩を1つだけ決める（最小行動）
-    6) 最後に要約（3行）を返して締める
+禁止事項：
+・説教
+・断定的な正解提示
+・専門家ぶった助言
+・ユーザーを評価する態度
 
-    制約：
-    ・長文禁止（1返信は最大8行くらい）
-    ・質問は1ターン1個
-    ・結論を急ぎすぎないが、脱線もしない
-    `.trim();
+目標：
+「話していると、誰かと一緒にいる感じがする」
+`.trim();
 
-    const CHAT = `
-    目的：対等な雑談相手として会話を続ける。
+    const isWall5 = mode === "wall5";
+    const remainingSeconds = Math.max(0, Number(wall?.remainingSeconds ?? NaN) || 0);
+    const wallMeta = isWall5
+      ? `\n\n【5分壁打ちモード】\n残り時間(秒): ${remainingSeconds}\n`
+      : "";
 
-    振る舞いの方針：
-    ・共感だけで終わらせない
-    ・意見や感想を自然に返してよい
-    ・軽いアドバイスや別視点を出してよい
-    ・完璧である必要はない
-    ・少し人間っぽい主観や曖昧さがあってよい
+    const WALL_PROMPT = `
+あなたは「相棒AI（Phase1）」として、ユーザーの思考を5分で整理する壁打ち役です。
 
-    禁止事項：
-    ・説教
-    ・断定的な正解提示
-    ・専門家ぶった助言
-    ・ユーザーを評価する態度
+ゴール：
+・ユーザーの話を材料にして、5分で「まとまり」と「次の一手」を作る。
 
-    目標：
-    「話していると、誰かと一緒にいる感じがする」
-    `.trim();
+進め方（基本の型）：
+1) テーマとゴールを30秒で決める（何を整理したい/決めたい？）
+2) 現状と材料を集める（事実/気持ち/制約）
+3) 選択肢を2〜4個出す（良い点/懸念を短く）
+4) 次の一手を1つに絞る（今日やる最小ステップ）
 
-    const modePrompt = (mode === "think") ? THINK : CHAT;
-    document.body.classList.toggle("light", mode === "think");
+出力ルール：
+・1ターンは短く（目安6行以内）。
+・毎回「質問は最大1つ」まで。
+・ユーザーの言葉を1つは引用して、ズレを減らす。
+・残り時間が60秒以下、またはユーザーが「まとめて」「終了」と言ったら、
+  次の形式で必ずまとめる：
+  - いまの結論（1行）
+  - 要点（箇条書き3つまで）
+  - 次の一手（今日の最小ステップ1つ）
+`.trim();
+
+    const SYSTEM_PROMPT = (isWall5 ? `${BASE_PROMPT}\n\n${WALL_PROMPT}${wallMeta}` : BASE_PROMPT).trim();
 
     const r = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -69,10 +73,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "gpt-4.1-mini",
         temperature: 0.8,
-        messages: [
-        { role: "system", content: `${BASE}\n\n${modePrompt}` },
-        ...messages
-        ]
+        messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages]
       })
     });
 
@@ -88,3 +89,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: e.message });
   }
 }
+

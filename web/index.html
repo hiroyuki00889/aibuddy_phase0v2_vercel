@@ -8,30 +8,36 @@
 </head>
 <body>
   <div id="gate" class="gate">
-  <div class="gateCard">
-    <h2>合言葉を入力してください</h2>
-    <input id="passInput" type="password" placeholder="パスコード" />
-    <button id="passBtn" class="btn">入室</button>
-    <p id="passError" class="error hidden">合言葉が違います</p>
-  </div>
-  </div>
-  <div id="modeGate" class="gate hidden">
-  <div class="gateCard">
-    <h2>今日はどうする？</h2>
-    <div class="modeBtns">
-      <button id="modeThink" class="btn">考えをまとめたい（5分）</button>
-      <button id="modeChat" class="btn ghost">雑談したい</button>
+    <div class="gateCard">
+      <h2>合言葉を入力してください</h2>
+      <input id="passInput" type="password" placeholder="パスコード" />
+      <button id="passBtn" class="btn">入室</button>
+      <p id="passError" class="error hidden">合言葉が違います</p>
     </div>
-    <p class="sub">あとで切り替えもできる</p>
   </div>
-</div>
+
   <div class="app">
     <header class="header">
       <div>
         <h1>相棒AI（第一形態）</h1>
         <p class="sub">あなたの相棒として何でも聞きたい</p>
       </div>
-      <button id="endBtn" class="btn ghost">セッション終了</button>
+
+      <div class="headerRight">
+        <div class="mode">
+          <button id="modeWallBtn" class="btn chip">5分壁打ち</button>
+          <button id="modeFreeBtn" class="btn chip active">フリートーク</button>
+        </div>
+
+        <div class="timer" aria-live="polite">
+          <span id="timerText">--:--</span>
+          <div class="progress" aria-hidden="true">
+            <div id="progressBar" class="bar"></div>
+          </div>
+        </div>
+
+        <button id="endBtn" class="btn ghost">セッション終了</button>
+      </div>
     </header>
 
     <main id="chat" class="chat" aria-live="polite"></main>

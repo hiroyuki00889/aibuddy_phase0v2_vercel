@@ -3,6 +3,12 @@ const inputEl = document.getElementById("input");
 const sendBtn = document.getElementById("sendBtn");
 const endBtn = document.getElementById("endBtn");
 
+// Phase1: モード切替（5分壁打ち / フリートーク）
+const modeWallBtn = document.getElementById("modeWallBtn");
+const modeFreeBtn = document.getElementById("modeFreeBtn");
+const timerText = document.getElementById("timerText");
+const progressBar = document.getElementById("progressBar");
+
 const modal = document.getElementById("modal");
 const closingTextEl = document.getElementById("closingText");
 const resetBtn = document.getElementById("resetBtn");
@@ -16,31 +22,24 @@ const passError = document.getElementById("passError");
 passBtn.addEventListener("click", () => {
   const v = passInput.value.trim();
   if (!v) return;
-  // 合言葉OK時
   accessCode = v;
-  gate.classList.add("hidden");
-
-  // 追加：
-  document.getElementById("modeGate").classList.remove("hidden");
-  const modeGate = document.getElementById("modeGate");
-  document.getElementById("modeThink").addEventListener("click", () => {
-  mode = "think";
-  modeGate.classList.add("hidden");
-  resetSession();
-  });
-  document.getElementById("modeChat").addEventListener("click", () => {
-  mode = "chat";
-  modeGate.classList.add("hidden");
-  resetSession();
-  });
+  gate.style.display = "none";
+  boot();
 });
 
 // ここだけ自分の環境に合わせて
 const API_BASE = ""; // これで同一ドメインに投げる
 
 let accessCode = "";
-let mode = ""; // "think" | "chat"
 let messages = []; // OpenAI形式: {role:"user"|"assistant", content:"..."}
+
+let mode = "free"; // "free" | "wall5"
+let wall = {
+  isActive: false,
+  endAt: 0,
+  timerId: null,
+  durationSeconds: 5 * 60,
+};
 
 function addBubble(text, who) {
   const div = document.createElement("div");
@@ -57,15 +56,26 @@ function setBusy(isBusy) {
   sendBtn.textContent = isBusy ? "…" : "送信";
 }
 
+function getWallRemainingSeconds() {
+  if (mode !== "wall5") return 0;
+  if (!wall.isActive) return wall.durationSeconds;
+  return Math.max(0, Math.ceil((wall.endAt - Date.now()) / 1000));
+}
+
 async function apiChat() {
   const res = await fetch(`${API_BASE}/api/chat`, {
     method: "POST",
-    headers: { 
+    headers: {
       "Content-Type": "application/json",
       "x-access-code": accessCode
-     },
-    body: JSON.stringify({ messages, mode }),
+    },
+    body: JSON.stringify({
+      messages,
+      mode,
+      wall: mode === "wall5" ? { remainingSeconds: getWallRemainingSeconds() } : undefined
+    })
   });
+
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text);
@@ -75,23 +85,74 @@ async function apiChat() {
 }
 
 function boot() {
-  addBubble("なんでも話して？", "ai");
+  if (mode === "wall5") {
+    addBubble(
+      "【5分壁打ち】タイマーが動くよ。\nテーマと「5分で何をまとめたいか」を一文で教えて。",
+      "ai"
+    );
+  } else {
+    addBubble("なんでも話して？", "ai");
+  }
 }
 
-function resetSession(){
-  chatEl.innerHTML = "";
-  messages = [];
+function setMode(nextMode) {
+  mode = nextMode;
+  modeWallBtn?.classList.toggle("active", mode === "wall5");
+  modeFreeBtn?.classList.toggle("active", mode === "free");
 
-  if(mode === "think"){
-    addBubble("5分で整理しよう。いま考えをまとめたいテーマを一言で教えて。", "ai");
-  }else{
-    addBubble("やあ！今日は何話す？", "ai");
+  if (mode === "free") {
+    stopWallTimer();
+    timerText.textContent = "--:--";
+    progressBar.style.width = "0%";
+  } else {
+    timerText.textContent = "05:00";
+    progressBar.style.width = "0%";
+  }
+}
+
+function startWallTimerIfNeeded() {
+  if (mode !== "wall5") return;
+  if (wall.isActive) return;
+  wall.isActive = true;
+  wall.endAt = Date.now() + wall.durationSeconds * 1000;
+  tickWallTimer();
+  wall.timerId = setInterval(tickWallTimer, 200);
+}
+
+function stopWallTimer() {
+  wall.isActive = false;
+  wall.endAt = 0;
+  if (wall.timerId) {
+    clearInterval(wall.timerId);
+    wall.timerId = null;
+  }
+}
+
+function formatMMSS(totalSeconds) {
+  const s = Math.max(0, totalSeconds);
+  const mm = String(Math.floor(s / 60)).padStart(2, "0");
+  const ss = String(s % 60).padStart(2, "0");
+  return `${mm}:${ss}`;
+}
+
+function tickWallTimer() {
+  const remaining = getWallRemainingSeconds();
+  timerText.textContent = formatMMSS(remaining);
+  const progress = 1 - remaining / wall.durationSeconds;
+  progressBar.style.width = `${Math.max(0, Math.min(1, progress)) * 100}%`;
+
+  if (remaining <= 0) {
+    stopWallTimer();
+    addBubble("時間になった。ここまでを短くまとめる？（「まとめて」でOK）", "ai");
   }
 }
 
 async function send() {
   const text = inputEl.value.trim();
   if (!text) return;
+
+  // wall5 のときは最初の送信でタイマー開始
+  startWallTimerIfNeeded();
 
   inputEl.value = "";
   addBubble(text, "user");
@@ -112,8 +173,11 @@ async function send() {
 }
 
 async function endSession() {
-  // “締め”専用のユーザーメッセージを足す（助言禁止のまま、閉じる一言だけ返してもらう）
-  const closingRequest = "ここで会話を終えたい。今日を閉じる一言を、短く静かに添えて。";
+  const closingRequest =
+    mode === "wall5"
+      ? "ここで壁打ちを終えたい。今までの内容を短くまとめて、次の一手を1つだけ出して。"
+      : "ここで会話を終えたい。今日を閉じる一言を、短く静かに添えて。";
+
   messages.push({ role: "user", content: closingRequest });
 
   try {
@@ -131,10 +195,16 @@ async function endSession() {
 }
 
 function reset() {
-  // UIをリセット
   chatEl.innerHTML = "";
   messages = [];
   modal.classList.add("hidden");
+
+  if (mode === "wall5") {
+    stopWallTimer();
+    timerText.textContent = "05:00";
+    progressBar.style.width = "0%";
+  }
+
   boot();
   inputEl.focus();
 }
@@ -147,3 +217,16 @@ endBtn.addEventListener("click", endSession);
 
 resetBtn.addEventListener("click", reset);
 closeBtn.addEventListener("click", () => modal.classList.add("hidden"));
+
+// --- モードボタン ---
+modeWallBtn?.addEventListener("click", () => {
+  setMode("wall5");
+  reset();
+});
+modeFreeBtn?.addEventListener("click", () => {
+  setMode("free");
+  reset();
+});
+
+// 初期状態
+setMode("free");
