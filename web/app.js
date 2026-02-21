@@ -33,13 +33,30 @@ const API_BASE = ""; // これで同一ドメインに投げる
 let accessCode = "";
 let messages = []; // OpenAI形式: {role:"user"|"assistant", content:"..."}
 
+// mode: free=カフェ / wall5=ノート
 let mode = "free"; // "free" | "wall5"
+
+// 5分壁打ちタイマー
 let wall = {
   isActive: false,
   endAt: 0,
   timerId: null,
   durationSeconds: 5 * 60,
 };
+
+// ===== テーマ（空間）管理 =====
+// free: カフェ / wall5: ノート / dusk: 終了演出
+function setTheme(theme) {
+  document.body.classList.remove("theme-free", "theme-wall", "theme-dusk");
+  if (theme === "wall") document.body.classList.add("theme-wall");
+  else if (theme === "dusk") document.body.classList.add("theme-dusk");
+  else document.body.classList.add("theme-free");
+}
+
+function applyThemeByMode() {
+  if (mode === "wall5") setTheme("wall");
+  else setTheme("free");
+}
 
 function addBubble(text, who) {
   const div = document.createElement("div");
@@ -85,9 +102,11 @@ async function apiChat() {
 }
 
 function boot() {
+  applyThemeByMode();
+
   if (mode === "wall5") {
     addBubble(
-      "【5分壁打ち】タイマーが動くよ。\nテーマと「5分で何をまとめたいか」を一文で教えて。",
+      "【5分壁打ち】タイマーが動くよ。\nテーマと『5分で何をまとめたいか』を一文で教えて。",
       "ai"
     );
   } else {
@@ -99,6 +118,8 @@ function setMode(nextMode) {
   mode = nextMode;
   modeWallBtn?.classList.toggle("active", mode === "wall5");
   modeFreeBtn?.classList.toggle("active", mode === "free");
+
+  applyThemeByMode();
 
   if (mode === "free") {
     stopWallTimer();
@@ -143,7 +164,7 @@ function tickWallTimer() {
 
   if (remaining <= 0) {
     stopWallTimer();
-    addBubble("時間になった。ここまでを短くまとめる？（「まとめて」でOK）", "ai");
+    addBubble("時間になった。ここまでを短くまとめる？（『まとめて』でOK）", "ai");
   }
 }
 
@@ -183,9 +204,14 @@ async function endSession() {
   try {
     setBusy(true);
     const reply = await apiChat();
+
+    // 終了演出：夕暮れ空間に切り替え
+    setTheme("dusk");
+
     closingTextEl.textContent = reply || "今日はここまで。おつかれさま。";
     modal.classList.remove("hidden");
   } catch (e) {
+    setTheme("dusk");
     closingTextEl.textContent = "今日はここまで。おつかれさま。";
     modal.classList.remove("hidden");
     console.error(e);
@@ -199,6 +225,9 @@ function reset() {
   messages = [];
   modal.classList.add("hidden");
 
+  // モード空間に戻す
+  applyThemeByMode();
+
   if (mode === "wall5") {
     stopWallTimer();
     timerText.textContent = "05:00";
@@ -210,28 +239,17 @@ function reset() {
 }
 
 sendBtn.addEventListener("click", send);
-// IME変換中のEnter送信を防ぐ & Shift+Enterで改行（必要なら）
 inputEl.addEventListener("keydown", (e) => {
-  let composing = false;
-  inputEl.addEventListener("compositionstart", () => { composing = true; });
-  inputEl.addEventListener("compositionend", () => { composing = false; });
-
-  // 変換確定中(IME)のEnterは送信しない
-  if (composing || e.isComposing || e.keyCode === 229) return;
-
-  if (e.key === "Enter") {
-    // Shift+Enterは改行（inputがtype="text"だと改行できないので、ここは無視でもOK）
-    if (e.shiftKey) return;
-
-    e.preventDefault();
-    send();
-  }
+  if (e.key === "Enter") send();
 });
-
 endBtn.addEventListener("click", endSession);
 
 resetBtn.addEventListener("click", reset);
-closeBtn.addEventListener("click", () => modal.classList.add("hidden"));
+closeBtn.addEventListener("click", () => {
+  modal.classList.add("hidden");
+  // 閉じたら現在モードの空間に戻す
+  applyThemeByMode();
+});
 
 // --- モードボタン ---
 modeWallBtn?.addEventListener("click", () => {
