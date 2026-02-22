@@ -239,7 +239,22 @@ function reset() {
 }
 
 sendBtn.addEventListener("click", send);
+// IME変換中のEnter送信を防ぐ & Shift+Enterで改行（必要なら）
 inputEl.addEventListener("keydown", (e) => {
+  let composing = false;
+  inputEl.addEventListener("compositionstart", () => { composing = true; });
+  inputEl.addEventListener("compositionend", () => { composing = false; });
+
+  // 変換確定中(IME)のEnterは送信しない
+  if (composing || e.isComposing || e.keyCode === 229) return;
+
+  if (e.key === "Enter") {
+    // Shift+Enterは改行（inputがtype="text"だと改行できないので、ここは無視でもOK）
+    if (e.shiftKey) return;
+
+    e.preventDefault();
+    send();
+  }
   if (e.key === "Enter") send();
 });
 endBtn.addEventListener("click", endSession);
