@@ -238,21 +238,28 @@ function reset() {
   inputEl.focus();
 }
 
+
+// //***変更箇所**** ここから：IME変換中Enterで送信しないためのフラグ
+let isComposing = false;
+
+inputEl.addEventListener("compositionstart", () => {
+  isComposing = true;
+});
+
+inputEl.addEventListener("compositionend", () => {
+  isComposing = false;
+});
+// //***変更箇所**** ここまで
+
 sendBtn.addEventListener("click", send);
-// IME変換中のEnter送信を防ぐ & Shift+Enterで改行（必要なら）
+
 inputEl.addEventListener("keydown", (e) => {
-  let composing = false;
-  inputEl.addEventListener("compositionstart", () => { composing = true; });
-  inputEl.addEventListener("compositionend", () => { composing = false; });
-
-  // 変換確定中(IME)のEnterは送信しない
-  if (composing || e.isComposing || e.keyCode === 229) return;
-
+  // //***変更箇所**** ここから：IME変換確定Enterを無視
+  // e.isComposing: 多くのブラウザで有効
+  // keyCode===229: 一部環境のIME判定の保険
   if (e.key === "Enter") {
-    // Shift+Enterは改行（inputがtype="text"だと改行できないので、ここは無視でもOK）
-    if (e.shiftKey) return;
-
-    e.preventDefault();
+    if (e.isComposing || isComposing || e.keyCode === 229) return;
+    if (e.shiftKey) return; // Shift+Enterは送信しない（将来textarea化しても安心）
     send();
   }
   if (e.key === "Enter") send();

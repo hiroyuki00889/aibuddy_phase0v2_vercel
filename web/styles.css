@@ -16,7 +16,8 @@ body {
 
 /* ---------- Free talk (Cafe table) ---------- */
 body.theme-free {
-  background: #f4efe8; /* warm cafe base */
+  /* 単色だと気づきにくいので、カフェっぽい柔らかいグラデに */
+  background: linear-gradient(180deg, #f4efe8 0%, #efe6dc 100%);
   color: #1f2328;
 }
 
@@ -41,12 +42,20 @@ body.theme-dusk {
   flex-direction: column;
 }
 
-body.theme-free .app,
+/* App panel */
+/* heme-free では app を透明にして body 背景を活かす */
+body.theme-free .app {
+  background: transparent;           /* ← ここが重要 */
+  backdrop-filter: none;
+}
+
+/* dusk は演出なので少しガラス感を残す */
 body.theme-dusk .app {
   background: rgba(255, 255, 255, 0.55);
   backdrop-filter: blur(6px);
 }
 
+/* wall は紙っぽく軽く */
 body.theme-wall .app {
   background: rgba(255, 255, 255, 0.35);
 }
@@ -59,34 +68,13 @@ body.theme-wall .app {
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.headerRight {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+/*：theme-free でヘッダーをカード化して読みやすさ確保 */
+body.theme-free .header,
+body.theme-wall .header,
+body.theme-dusk .header {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(4px);
 }
-
-h1 { margin: 0; font-size: 18px; }
-.sub { margin: 4px 0 0; opacity: 0.7; font-size: 12px; }
-
-/* Mode chips */
-.mode { display: flex; gap: 8px; }
-.chip { padding: 8px 10px; border-radius: 999px; font-size: 12px; opacity: 0.9; }
-.chip.active {
-  border-color: rgba(70, 130, 180, 0.55);
-  background: rgba(70, 130, 180, 0.12);
-}
-
-/* Timer */
-.timer { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; min-width: 86px; }
-#timerText { font-variant-numeric: tabular-nums; font-size: 12px; opacity: 0.8; }
-
-.progress {
-  width: 86px; height: 6px;
-  background: rgba(0, 0, 0, 0.08);
-  border-radius: 999px;
-  overflow: hidden;
-}
-.bar { height: 100%; width: 0%; background: rgba(70, 130, 180, 0.55); transition: width 200ms linear; }
 
 .chat {
   padding: 16px;
@@ -98,29 +86,24 @@ h1 { margin: 0; font-size: 18px; }
 }
 
 /* Notebook lines only in wall mode */
+/* ：罫線を見える濃さに */
 body.theme-wall .chat {
   background:
     repeating-linear-gradient(
       0deg,
       transparent,
-      transparent 23px,
-      rgba(0, 0, 0, 0.04) 24px
+      transparent 22px,
+      rgba(0, 0, 0, 0.085) 23px,   /* 罫線を濃く */
+      rgba(0, 0, 0, 0.085) 24px
     );
 }
 
-/* Bubbles */
-.bubble {
-  max-width: 78%;
-  padding: 10px 12px;
-  border-radius: 14px;
-  line-height: 1.5;
-  font-size: 14px;
-  white-space: pre-wrap;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+ /* ：theme-free の chat をカード化 */
+body.theme-free .chat,
+body.theme-dusk .chat {
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(3px);
 }
-.ai { align-self: flex-start; background: rgba(255, 255, 255, 0.72); }
-.user { align-self: flex-end; background: rgba(70, 130, 180, 0.12); }
 
 .composer {
   display: flex;
