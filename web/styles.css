@@ -105,6 +105,20 @@ body.theme-dusk .chat {
   backdrop-filter: blur(3px);
 }
 
+/* Bubbles */
+.bubble {
+  max-width: 78%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  line-height: 1.5;
+  font-size: 14px;
+  white-space: pre-wrap;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+.ai { align-self: flex-start; background: rgba(255, 255, 255, 0.72); }
+.user { align-self: flex-end; background: rgba(70, 130, 180, 0.12); }
+
 .composer {
   display: flex;
   gap: 10px;
