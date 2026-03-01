@@ -59,12 +59,35 @@ function applyThemeByMode() {
 }
 
 function addBubble(text, who) {
+  // wall5 はバブル無しの左右レイアウト
+  if (mode === "wall5") {
+    const row = document.createElement("div");
+    row.className = `wallRow ${who}`; // ai / user
+
+    const label = document.createElement("div");
+    label.className = "wallLabel";
+    label.textContent = who === "ai" ? "AI" : "あなた";
+
+    const content = document.createElement("div");
+    content.className = "wallText";
+    content.textContent = text;
+
+    row.appendChild(label);
+    row.appendChild(content);
+
+    chatEl.appendChild(row);
+    chatEl.scrollTop = chatEl.scrollHeight;
+    return;
+  }
+
+  // フリートークは従来どおりバブル
   const div = document.createElement("div");
   div.className = `bubble ${who}`;
   div.textContent = text;
   chatEl.appendChild(div);
   chatEl.scrollTop = chatEl.scrollHeight;
 }
+
 
 function setBusy(isBusy) {
   sendBtn.disabled = isBusy;

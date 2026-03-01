@@ -188,3 +188,55 @@ input:focus { outline: none; border-color: rgba(70, 130, 180, 0.55); }
 }
 .error { color: #c62828; font-size: 12px; margin-top: 8px; }
 .hidden { display: none; }
+
+/* 壁打ち（wall5）専用のバブル無し表示 */
+
+body.theme-wall .bubble { display: none; } /* 念のため（壁打ちでは bubble を使わない想定） */
+
+.wallRow{
+  max-width: 86%;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* AI：左寄せ + 左ライン */
+.wallRow.ai{
+  align-self: flex-start;
+  margin-right: auto;
+  border-left: 4px solid rgba(70, 130, 180, 0.45);
+  background: rgba(255,255,255,0.38);
+}
+
+/* User：右寄せ + 右ライン */
+.wallRow.user{
+  align-self: flex-end;
+  margin-left: auto;
+  grid-template-columns: 1fr auto; /* ラベルを右に寄せる */
+  border-right: 4px solid rgba(70, 130, 180, 0.65);
+  background: rgba(70,130,180,0.10);
+}
+
+/* ラベル（チップ） */
+.wallLabel{
+  font-size: 11px;
+  opacity: 0.75;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.10);
+  background: rgba(255,255,255,0.55);
+  height: fit-content;
+}
+
+.wallRow.user .wallLabel{
+  justify-self: end;
+}
+
+/* 本文 */
+.wallText{
+  font-size: 14px;
+}
