@@ -19,12 +19,12 @@ const passInput = document.getElementById("passInput");
 const passBtn = document.getElementById("passBtn");
 const passError = document.getElementById("passError");
 
-passBtn.addEventListener("click", () => {
+passBtn.addEventListener("click", async () => {
   const v = passInput.value.trim();
   if (!v) return;
   accessCode = v;
   gate.style.display = "none";
-  boot();
+  await boot();
 });
 
 // ここだけ自分の環境に合わせて
@@ -35,6 +35,10 @@ let messages = []; // OpenAI形式: {role:"user"|"assistant", content:"..."}
 
 // mode: free=カフェ / wall5=ノート
 let mode = "free"; // "free" | "wall5"
+
+// //***変更箇所**** ここから：Phase2の超軽い記憶を保持
+let latestMemory = null;
+// //***変更箇所**** ここまで
 
 // 5分壁打ちタイマー
 let wall = {
@@ -88,7 +92,6 @@ function addBubble(text, who) {
   chatEl.scrollTop = chatEl.scrollHeight;
 }
 
-
 function setBusy(isBusy) {
   sendBtn.disabled = isBusy;
   inputEl.disabled = isBusy;
@@ -102,6 +105,24 @@ function getWallRemainingSeconds() {
   return Math.max(0, Math.ceil((wall.endAt - Date.now()) / 1000));
 }
 
+// //***変更箇所**** ここから：最新記憶を取得
+async function apiGetLatestMemory() {
+  const res = await fetch(`${API_BASE}/api/memory/latest`, {
+    method: "GET",
+    headers: {
+      "x-access-code": accessCode
+    }
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text);
+  }
+
+  return await res.json();
+}
+// //***変更箇所**** ここまで
+
 async function apiChat() {
   const res = await fetch(`${API_BASE}/api/chat`, {
     method: "POST",
@@ -112,7 +133,10 @@ async function apiChat() {
     body: JSON.stringify({
       messages,
       mode,
-      wall: mode === "wall5" ? { remainingSeconds: getWallRemainingSeconds() } : undefined
+      wall: mode === "wall5" ? { remainingSeconds: getWallRemainingSeconds() } : undefined,
+      // //***変更箇所**** ここから：Phase2の記憶を会話APIへ渡す
+      latestMemory
+      // //***変更箇所**** ここまで
     })
   });
 
@@ -124,8 +148,61 @@ async function apiChat() {
   return data.reply;
 }
 
-function boot() {
+// //***変更箇所**** ここから：終了時専用API
+async function apiEndSession() {
+  const res = await fetch(`${API_BASE}/api/session/end`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-access-code": accessCode
+    },
+    body: JSON.stringify({
+      messages,
+      mode
+    })
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text);
+  }
+
+  return await res.json();
+}
+
+function buildMemoryIntro(memory) {
+  if (!memory?.summary || !memory?.next_action) return "";
+
+  return `この前の続きからでもいけるよ。
+
+前回は「${memory.summary}」
+
+次の一手は
+「${memory.next_action}」
+
+続きから話す？
+今日は別の話でも大丈夫。`;
+}
+// //***変更箇所**** ここまで
+
+// //***変更箇所**** ここから：bootをasync化し、開始時に記憶を読む
+async function boot() {
   applyThemeByMode();
+
+  latestMemory = null;
+
+  try {
+    const memoryRes = await apiGetLatestMemory();
+    latestMemory = memoryRes?.latest_memory ?? null;
+  } catch (e) {
+    console.error("memory load failed:", e);
+    latestMemory = null;
+  }
+
+  if (latestMemory) {
+    addBubble(buildMemoryIntro(latestMemory), "ai");
+    return;
+  }
 
   if (mode === "wall5") {
     addBubble(
@@ -136,6 +213,7 @@ function boot() {
     addBubble("なんでも話して？", "ai");
   }
 }
+// //***変更箇所**** ここまで
 
 function setMode(nextMode) {
   mode = nextMode;
@@ -216,6 +294,7 @@ async function send() {
   }
 }
 
+// //***変更箇所**** ここから：終了APIを分離し、memoryも受け取る
 async function endSession() {
   const closingRequest =
     mode === "wall5"
@@ -226,12 +305,16 @@ async function endSession() {
 
   try {
     setBusy(true);
-    const reply = await apiChat();
+    const data = await apiEndSession();
+
+    if (data?.latest_memory) {
+      latestMemory = data.latest_memory;
+    }
 
     // 終了演出：夕暮れ空間に切り替え
     setTheme("dusk");
 
-    closingTextEl.textContent = reply || "今日はここまで。おつかれさま。";
+    closingTextEl.textContent = data?.closing_message || "今日はここまで。おつかれさま。";
     modal.classList.remove("hidden");
   } catch (e) {
     setTheme("dusk");
@@ -242,8 +325,10 @@ async function endSession() {
     setBusy(false);
   }
 }
+// //***変更箇所**** ここまで
 
-function reset() {
+// //***変更箇所**** ここから：resetもasync化
+async function reset() {
   chatEl.innerHTML = "";
   messages = [];
   modal.classList.add("hidden");
@@ -257,10 +342,10 @@ function reset() {
     progressBar.style.width = "0%";
   }
 
-  boot();
+  await boot();
   inputEl.focus();
 }
-
+// //***変更箇所**** ここまで
 
 // //***変更箇所**** ここから：IME変換中Enterで送信しないためのフラグ
 let isComposing = false;
@@ -276,20 +361,23 @@ inputEl.addEventListener("compositionend", () => {
 
 sendBtn.addEventListener("click", send);
 
+// //***変更箇所**** ここから：Enter二重送信を修正
 inputEl.addEventListener("keydown", (e) => {
-  // //***変更箇所**** ここから：IME変換確定Enterを無視
-  // e.isComposing: 多くのブラウザで有効
-  // keyCode===229: 一部環境のIME判定の保険
-  if (e.key === "Enter") {
-    if (e.isComposing || isComposing || e.keyCode === 229) return;
-    if (e.shiftKey) return; // Shift+Enterは送信しない（将来textarea化しても安心）
-    send();
-  }
-  if (e.key === "Enter") send();
+  if (e.key !== "Enter") return;
+  if (e.isComposing || isComposing || e.keyCode === 229) return;
+  if (e.shiftKey) return;
+
+  e.preventDefault();
+  send();
 });
+// //***変更箇所**** ここまで
+
 endBtn.addEventListener("click", endSession);
 
-resetBtn.addEventListener("click", reset);
+resetBtn.addEventListener("click", () => {
+  reset();
+});
+
 closeBtn.addEventListener("click", () => {
   modal.classList.add("hidden");
   // 閉じたら現在モードの空間に戻す
@@ -301,6 +389,7 @@ modeWallBtn?.addEventListener("click", () => {
   setMode("wall5");
   reset();
 });
+
 modeFreeBtn?.addEventListener("click", () => {
   setMode("free");
   reset();

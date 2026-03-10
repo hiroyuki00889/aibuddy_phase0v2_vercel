@@ -6,11 +6,16 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
   try {
-    const { messages, mode, wall } = req.body || {};
-    if (!Array.isArray(messages)) return res.status(400).json({ error: "messages must be an array" });
+    const { messages, mode, wall, latestMemory } = req.body || {};
+
+    if (!Array.isArray(messages)) {
+      return res.status(400).json({ error: "messages must be an array" });
+    }
 
     const BASE_PROMPT = `
 あなたは「相棒AI」です。
@@ -35,6 +40,7 @@ export default async function handler(req, res) {
 
     const isWall5 = mode === "wall5";
     const remainingSeconds = Math.max(0, Number(wall?.remainingSeconds ?? NaN) || 0);
+
     const wallMeta = isWall5
       ? `\n\n【5分壁打ちモード】\n残り時間(秒): ${remainingSeconds}\n`
       : "";
@@ -62,7 +68,30 @@ export default async function handler(req, res) {
   - 次の一手（今日の最小ステップ1つ）
 `.trim();
 
-    const SYSTEM_PROMPT = (isWall5 ? `${BASE_PROMPT}\n\n${WALL_PROMPT}${wallMeta}` : BASE_PROMPT).trim();
+    // //***変更箇所**** ここから：Phase2の超軽い記憶
+    const memoryPrompt =
+      latestMemory?.summary && latestMemory?.next_action
+        ? `
+【直近の軽い記憶】
+前回要約: ${latestMemory.summary}
+次の一手: ${latestMemory.next_action}
+
+この記憶は「会話を続けやすくするための軽い接続情報」です。
+ユーザーが前回の続きを話したいなら自然に使ってよい。
+ただし、今回が別の話題なら無理に引っ張らず、現在の話を優先すること。
+ユーザーを責めたり進捗確認を押しつけたりしないこと。
+`.trim()
+        : "";
+    // //***変更箇所**** ここまで
+
+    const SYSTEM_PROMPT = [
+      BASE_PROMPT,
+      isWall5 ? WALL_PROMPT : "",
+      wallMeta.trim(),
+      memoryPrompt
+    ]
+      .filter(Boolean)
+      .join("\n\n");
 
     const r = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -84,9 +113,9 @@ export default async function handler(req, res) {
 
     const data = await r.json();
     const reply = data.choices?.[0]?.message?.content ?? "";
+
     return res.status(200).json({ reply });
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }
 }
-
