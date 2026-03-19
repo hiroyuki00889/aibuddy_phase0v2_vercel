@@ -11,7 +11,9 @@ export default async function handler(req, res) {
   }
 
   try {
+    // //***変更箇所**** ここから：latestMemory を受け取る
     const { messages, mode, wall, latestMemory } = req.body || {};
+    // //***変更箇所**** ここまで
 
     if (!Array.isArray(messages)) {
       return res.status(400).json({ error: "messages must be an array" });
@@ -68,30 +70,32 @@ export default async function handler(req, res) {
   - 次の一手（今日の最小ステップ1つ）
 `.trim();
 
-    // //***変更箇所**** ここから：Phase2の超軽い記憶
-    const memoryPrompt =
+    // //***変更箇所**** ここから：Phase2の軽い記憶をプロンプトへ追加
+    const MEMORY_PROMPT =
       latestMemory?.summary && latestMemory?.next_action
         ? `
 【直近の軽い記憶】
 前回要約: ${latestMemory.summary}
 次の一手: ${latestMemory.next_action}
 
-この記憶は「会話を続けやすくするための軽い接続情報」です。
+この情報は、前回の続きから入りやすくするための軽い記憶です。
 ユーザーが前回の続きを話したいなら自然に使ってよい。
-ただし、今回が別の話題なら無理に引っ張らず、現在の話を優先すること。
-ユーザーを責めたり進捗確認を押しつけたりしないこと。
+ただし今回が別の話題なら無理に引っ張らず、今の話を優先すること。
+進捗確認を押しつけたり、責めたりしないこと。
 `.trim()
         : "";
     // //***変更箇所**** ここまで
 
+    // //***変更箇所**** ここから：SYSTEM_PROMPTの組み立て
     const SYSTEM_PROMPT = [
       BASE_PROMPT,
       isWall5 ? WALL_PROMPT : "",
       wallMeta.trim(),
-      memoryPrompt
+      MEMORY_PROMPT
     ]
       .filter(Boolean)
       .join("\n\n");
+    // //***変更箇所**** ここまで
 
     const r = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",

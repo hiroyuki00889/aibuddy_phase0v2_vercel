@@ -27,20 +27,16 @@ passBtn.addEventListener("click", async () => {
   await boot();
 });
 
-// ここだけ自分の環境に合わせて
-const API_BASE = ""; // これで同一ドメインに投げる
+const API_BASE = "";
 
 let accessCode = "";
-let messages = []; // OpenAI形式: {role:"user"|"assistant", content:"..."}
+let messages = [];
+let mode = "free";
 
-// mode: free=カフェ / wall5=ノート
-let mode = "free"; // "free" | "wall5"
-
-// //***変更箇所**** ここから：Phase2の超軽い記憶を保持
+// //***変更箇所**** ここから：Phase2の軽い記憶を保持
 let latestMemory = null;
 // //***変更箇所**** ここまで
 
-// 5分壁打ちタイマー
 let wall = {
   isActive: false,
   endAt: 0,
@@ -48,8 +44,6 @@ let wall = {
   durationSeconds: 5 * 60,
 };
 
-// ===== テーマ（空間）管理 =====
-// free: カフェ / wall5: ノート / dusk: 終了演出
 function setTheme(theme) {
   document.body.classList.remove("theme-free", "theme-wall", "theme-dusk");
   if (theme === "wall") document.body.classList.add("theme-wall");
@@ -63,10 +57,9 @@ function applyThemeByMode() {
 }
 
 function addBubble(text, who) {
-  // wall5 はバブル無しの左右レイアウト
   if (mode === "wall5") {
     const row = document.createElement("div");
-    row.className = `wallRow ${who}`; // ai / user
+    row.className = `wallRow ${who}`;
 
     const label = document.createElement("div");
     label.className = "wallLabel";
@@ -84,7 +77,6 @@ function addBubble(text, who) {
     return;
   }
 
-  // フリートークは従来どおりバブル
   const div = document.createElement("div");
   div.className = `bubble ${who}`;
   div.textContent = text;
@@ -105,7 +97,7 @@ function getWallRemainingSeconds() {
   return Math.max(0, Math.ceil((wall.endAt - Date.now()) / 1000));
 }
 
-// //***変更箇所**** ここから：最新記憶を取得
+// //***変更箇所**** ここから：memory取得API
 async function apiGetLatestMemory() {
   const res = await fetch(`${API_BASE}/api/memory/latest`, {
     method: "GET",
@@ -134,7 +126,7 @@ async function apiChat() {
       messages,
       mode,
       wall: mode === "wall5" ? { remainingSeconds: getWallRemainingSeconds() } : undefined,
-      // //***変更箇所**** ここから：Phase2の記憶を会話APIへ渡す
+      // //***変更箇所**** ここから：latestMemoryを渡す
       latestMemory
       // //***変更箇所**** ここまで
     })
@@ -144,11 +136,12 @@ async function apiChat() {
     const text = await res.text();
     throw new Error(text);
   }
+
   const data = await res.json();
   return data.reply;
 }
 
-// //***変更箇所**** ここから：終了時専用API
+// //***変更箇所**** ここから：終了APIを分離
 async function apiEndSession() {
   const res = await fetch(`${API_BASE}/api/session/end`, {
     method: "POST",
@@ -185,7 +178,7 @@ function buildMemoryIntro(memory) {
 }
 // //***変更箇所**** ここまで
 
-// //***変更箇所**** ここから：bootをasync化し、開始時に記憶を読む
+// //***変更箇所**** ここから：bootをasync化してmemory取得
 async function boot() {
   applyThemeByMode();
 
@@ -273,7 +266,6 @@ async function send() {
   const text = inputEl.value.trim();
   if (!text) return;
 
-  // wall5 のときは最初の送信でタイマー開始
   startWallTimerIfNeeded();
 
   inputEl.value = "";
@@ -294,7 +286,7 @@ async function send() {
   }
 }
 
-// //***変更箇所**** ここから：終了APIを分離し、memoryも受け取る
+// //***変更箇所**** ここから：終了時に memory を保存
 async function endSession() {
   const closingRequest =
     mode === "wall5"
@@ -311,7 +303,6 @@ async function endSession() {
       latestMemory = data.latest_memory;
     }
 
-    // 終了演出：夕暮れ空間に切り替え
     setTheme("dusk");
 
     closingTextEl.textContent = data?.closing_message || "今日はここまで。おつかれさま。";
@@ -327,13 +318,12 @@ async function endSession() {
 }
 // //***変更箇所**** ここまで
 
-// //***変更箇所**** ここから：resetもasync化
+// //***変更箇所**** ここから：resetをasync化
 async function reset() {
   chatEl.innerHTML = "";
   messages = [];
   modal.classList.add("hidden");
 
-  // モード空間に戻す
   applyThemeByMode();
 
   if (mode === "wall5") {
@@ -347,7 +337,6 @@ async function reset() {
 }
 // //***変更箇所**** ここまで
 
-// //***変更箇所**** ここから：IME変換中Enterで送信しないためのフラグ
 let isComposing = false;
 
 inputEl.addEventListener("compositionstart", () => {
@@ -357,7 +346,6 @@ inputEl.addEventListener("compositionstart", () => {
 inputEl.addEventListener("compositionend", () => {
   isComposing = false;
 });
-// //***変更箇所**** ここまで
 
 sendBtn.addEventListener("click", send);
 
@@ -380,11 +368,9 @@ resetBtn.addEventListener("click", () => {
 
 closeBtn.addEventListener("click", () => {
   modal.classList.add("hidden");
-  // 閉じたら現在モードの空間に戻す
   applyThemeByMode();
 });
 
-// --- モードボタン ---
 modeWallBtn?.addEventListener("click", () => {
   setMode("wall5");
   reset();
@@ -395,5 +381,4 @@ modeFreeBtn?.addEventListener("click", () => {
   reset();
 });
 
-// 初期状態
 setMode("free");

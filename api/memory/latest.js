@@ -14,6 +14,7 @@ export default async function handler(req, res) {
 
   try {
     const latestMemory = await readLatestMemory();
+
     return res.status(200).json({
       latest_memory: latestMemory
     });
