@@ -29,11 +29,26 @@
           <button id="modeFreeBtn" class="btn chip active">フリートーク</button>
         </div>
 
+        <!-- //***変更箇所**** ここから：壁打ち時間設定 -->
+        <div id="wallDurationBox" class="wallDurationBox hidden">
+          <label for="wallMinutesInput">壁打ち時間(1~30分)</label>
+          <input id="wallMinutesInput" type="number" min="1" max="30" value="5" />
+          <span>分</span>
+        </div>
+        <!-- //***変更箇所**** ここまで -->
+
         <div class="timer" aria-live="polite">
           <span id="timerText">--:--</span>
           <div class="progress" aria-hidden="true">
             <div id="progressBar" class="bar"></div>
           </div>
+
+          <!-- //***変更箇所**** ここから：壁打ちの回答カウントダウン -->
+          <div id="answerTimerBox" class="answerTimerBox hidden">
+            <span class="answerTimerLabel">回答目安</span>
+            <span id="answerTimerText">--:--</span>
+          </div>
+          <!-- //***変更箇所**** ここまで -->
         </div>
 
         <button id="endBtn" class="btn ghost">セッション終了</button>
@@ -44,6 +59,9 @@
 
     <footer class="composer">
       <input id="input" type="text" placeholder="今の気持ちを一言でも…" autocomplete="off" />
+      <!-- //***変更箇所**** ここから：壁打ち用まとめるボタン -->
+      <button id="summarizeBtn" class="btn ghost hidden">まとめる</button>
+      <!-- //***変更箇所**** ここまで -->
       <button id="sendBtn" class="btn">送信</button>
     </footer>
   </div>

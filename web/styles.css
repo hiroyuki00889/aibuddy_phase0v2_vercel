@@ -240,3 +240,41 @@ body.theme-wall .bubble { display: none; } /* 念のため（壁打ちでは bub
 .wallText{
   font-size: 14px;
 }
+
+/* //***変更箇所**** ここから：壁打ち時間設定・回答タイマー・まとめるボタン */
+.wallDurationBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.wallDurationBox input {
+  width: 64px;
+  padding: 8px 10px;
+}
+
+.answerTimerBox {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.answerTimerLabel {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+#answerTimerText.isOver {
+  color: #c62828;
+  font-weight: 700;
+}
+
+.hidden {
+  display: none;
+}
+/* //***変更箇所**** ここまで */
