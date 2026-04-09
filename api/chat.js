@@ -138,7 +138,7 @@ answerLimitSeconds ルール：
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "gpt-4.1-mini",
+        model: "gpt-4o-mini",
         temperature: 0.8,
         messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages]
       })
@@ -154,7 +154,7 @@ answerLimitSeconds ルール：
 
     // //***変更箇所**** ここから：壁打ち時はJSON解釈
     if (isWall5) {
-      const parsed = parseJsonSafely(content);
+      const parsed = parseJsonSafely(reply);
 
       if (!parsed?.reply) {
         return res.status(500).json({ error: "Invalid wall response JSON" });
@@ -173,7 +173,7 @@ answerLimitSeconds ルール：
 
     // フリートークなど通常時
     return res.status(200).json({
-      reply: content,
+      reply: reply,
       answerLimitSeconds: null
     });
     // //***変更箇所**** ここまで
