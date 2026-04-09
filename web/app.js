@@ -156,7 +156,7 @@ async function apiChat() {
   }
 
   const data = await res.json();
-  return data.reply;
+  return data;
 }
 
 //終了APIを分離
