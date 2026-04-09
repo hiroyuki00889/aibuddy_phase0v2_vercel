@@ -150,11 +150,11 @@ answerLimitSeconds ルール：
     }
 
     const data = await r.json();
-    const reply = data.choices?.[0]?.message?.content ?? "";
+    const content = data.choices?.[0]?.message?.content ?? "";
 
     // //***変更箇所**** ここから：壁打ち時はJSON解釈
     if (isWall5) {
-      const parsed = parseJsonSafely(reply);
+      const parsed = parseJsonSafely(content);
 
       if (!parsed?.reply) {
         return res.status(500).json({ error: "Invalid wall response JSON" });
@@ -173,7 +173,7 @@ answerLimitSeconds ルール：
 
     // フリートークなど通常時
     return res.status(200).json({
-      reply: reply,
+      reply: content,
       answerLimitSeconds: null
     });
     // //***変更箇所**** ここまで
