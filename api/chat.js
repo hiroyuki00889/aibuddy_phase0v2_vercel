@@ -2,19 +2,34 @@ export default async function handler(req, res) {
   const ACCESS_CODE = process.env.ACCESS_CODE;
   const clientCode = req.headers["x-access-code"];
 
-  // //***変更箇所**** ここから：JSONパースの安全化関数を追加 */
+  // //***変更箇所**** ここから：JSONパースの安全化を強化
   function parseJsonSafely(text) {
-  try {
-    return JSON.parse(text);
-  } catch {
-    const match = text.match(/\{[\s\S]*\}/);
-    if (!match) return null;
+    if (!text || typeof text !== "string") return null;
+
+    const trimmed = text.trim();
+
+    // そのままJSON
     try {
-      return JSON.parse(match[0]);
-    } catch {
-      return null;
+      return JSON.parse(trimmed);
+    } catch {}
+
+    // ```json ... ``` を除去
+    const codeBlockMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+    if (codeBlockMatch?.[1]) {
+      try {
+        return JSON.parse(codeBlockMatch[1]);
+      } catch {}
     }
-  }
+
+    // 文字列中の最初の { ... } を拾う
+    const match = trimmed.match(/\{[\s\S]*\}/);
+    if (match?.[0]) {
+      try {
+        return JSON.parse(match[0]);
+      } catch {}
+    }
+
+    return null;
   }
   // //***変更箇所**** ここまで
 
@@ -114,6 +129,7 @@ export default async function handler(req, res) {
   "reply": "ユーザーに見せる返答",
   "answerLimitSeconds": 数値またはnull
 }
+JSON以外の文章、前置き、補足、コードブロックは一切出さない
 
 answerLimitSeconds ルール：
 ・質問しない返答なら null

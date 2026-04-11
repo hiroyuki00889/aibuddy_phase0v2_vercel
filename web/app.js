@@ -352,11 +352,9 @@ async function send() {
   if (!text) return;
 
   // 回答を送ったら回答タイマーは止める
-  // //***変更箇所**** ここから
   if (mode === "wall5") {
     stopAnswerTimer();
   }
-  // //***変更箇所**** ここまで
 
   // wall5 のときは最初の送信でタイマー開始
   startWallTimerIfNeeded();
@@ -375,11 +373,11 @@ async function send() {
     addBubble(reply, "ai");
     messages.push({ role: "assistant", content: reply });
 
-    // //***変更箇所**** ここから：AIの質問にだけ回答用タイマーを出す
+    // AIの質問にだけ回答用タイマーを出す
     if (mode === "wall5" && answerLimitSeconds) {
       startAnswerTimer(answerLimitSeconds);
     }
-    // //***変更箇所**** ここまで
+
   } catch (e) {
     addBubble("ごめんね、今はうまく話せないみたい。少しだけ時間をおいて、もう一度でもいい？", "ai");
     console.error(e);
