@@ -56,6 +56,7 @@ let wall = {
   answerEndAt: 0,
   answerActive: false,
   answerPromptShown: false,
+  answerTimerEl: null,
   // //***変更箇所**** ここまで
 };
 
@@ -71,6 +72,16 @@ function applyThemeByMode() {
   else setTheme("free");
 }
 
+// //***変更箇所**** ここから：モード別に入力欄の文言を変更
+function updateInputPlaceholder() {
+  if (mode === "wall5") {
+    inputEl.placeholder = "今まとめたいことを一文で…";
+  } else {
+    inputEl.placeholder = "今の気持ちを一言でも…";
+  }
+}
+// //***変更箇所**** ここまで
+
 function addBubble(text, who) {
   if (mode === "wall5") {
     const row = document.createElement("div");
@@ -84,12 +95,25 @@ function addBubble(text, who) {
     content.className = "wallText";
     content.textContent = text;
 
+    // //***変更箇所**** ここから：AI返答バブル右下に回答目安を表示
+    let timerEl = null;
+
+    if (who === "ai" && options.answerLimitSeconds) {
+      timerEl = document.createElement("div");
+      timerEl.className = "wallAnswerTimer";
+      timerEl.textContent = `回答目安 ${formatMMSS(options.answerLimitSeconds)}`;
+      content.appendChild(timerEl);
+    }
+    // //***変更箇所**** ここまで
+
     row.appendChild(label);
     row.appendChild(content);
 
     chatEl.appendChild(row);
     chatEl.scrollTop = chatEl.scrollHeight;
-    return;
+    // //***変更箇所**** ここから：タイマー要素を返す
+    return { row, timerEl };
+    // //***変更箇所**** ここまで
   }
 
   const div = document.createElement("div");
@@ -97,6 +121,8 @@ function addBubble(text, who) {
   div.textContent = text;
   chatEl.appendChild(div);
   chatEl.scrollTop = chatEl.scrollHeight;
+
+  return { row: div, timerEl: null };
 }
 
 function setBusy(isBusy) {
@@ -184,20 +210,40 @@ async function apiEndSession() {
 function buildMemoryIntro(memory) {
   if (!memory?.summary || !memory?.next_action) return "";
 
-  return `この前の続きからでもいけるよ。
+  // //***変更箇所**** ここから：モード別に前回要約と促し文を変更
+  if (mode === "wall5") {
+    return `前回の壁打ちの続きから始められるよ。
+
+前回の要約：
+「${memory.summary}」
+
+次の一手：
+「${memory.next_action}」
+
+この続きで整理する？
+それとも、今日は別テーマで壁打ちする？`;
+  }
+
+  return `お帰りなさい！今日はどうだった？
 
 前回は「${memory.summary}」
 
 次の一手は
 「${memory.next_action}」
+だったよ。
 
 続きから話す？
-今日は別の話でも大丈夫。`;
+別の話でも大丈夫。`;
+  // //***変更箇所**** ここまで
 }
 
 //bootをasync化してmemory取得
 async function boot() {
   applyThemeByMode();
+
+  // //***変更箇所**** ここから：モード別入力文言を反映
+  updateInputPlaceholder();
+  // //***変更箇所**** ここまで
 
   latestMemory = null;
 
@@ -234,13 +280,16 @@ function setMode(nextMode) {
 
   applyThemeByMode();
 
-  // //***変更箇所**** ここから：壁打ちUIの表示切替
+  // //***変更箇所**** ここから：モード切替時に入力文言も変更
+  updateInputPlaceholder();
+  // //***変更箇所**** ここまで
+
+  // 壁打ちUIの表示切替
   wallDurationBox?.classList.toggle("hidden", mode !== "wall5");
   summarizeBtn?.classList.toggle("hidden", mode !== "wall5");
   if (mode !== "wall5") {
     stopAnswerTimer();
   }
-  // //***変更箇所**** ここまで
 
   if (mode === "free") {
     stopWallTimer();
@@ -280,20 +329,22 @@ function formatMMSS(totalSeconds) {
   return `${mm}:${ss}`;
 }
 
-// //***変更箇所**** ここから：回答用カウントダウン
+// 回答用カウントダウン
 function stopAnswerTimer() {
   wall.answerActive = false;
   wall.answerEndAt = 0;
   wall.answerPromptShown = false;
+  wall.answerTimerEl = null;
 
   if (wall.answerTimerId) {
     clearInterval(wall.answerTimerId);
     wall.answerTimerId = null;
   }
 
-  answerTimerText.textContent = "--:--";
-  answerTimerText.classList.remove("isOver");
-  answerTimerBox.classList.add("hidden");
+  // //***変更箇所**** ここから：上部タイマーが残っていても安全に隠す
+  answerTimerText?.classList.remove("isOver");
+  answerTimerBox?.classList.add("hidden");
+  // //***変更箇所**** ここまで
 }
 
 function getAnswerRemainingSeconds() {
@@ -303,10 +354,19 @@ function getAnswerRemainingSeconds() {
 
 function tickAnswerTimer() {
   const remaining = getAnswerRemainingSeconds();
-  answerTimerText.textContent = formatMMSS(remaining);
+
+  // //***変更箇所**** ここから：AI返答バブル内のタイマーを更新
+  if (wall.answerTimerEl) {
+    wall.answerTimerEl.textContent =
+      remaining > 0 ? `回答目安 ${formatMMSS(remaining)}` : "回答目安 00:00";
+  }
+  // //***変更箇所**** ここまで
 
   if (remaining <= 0) {
-    answerTimerText.classList.add("isOver");
+    if (wall.answerTimerEl) {
+      wall.answerTimerEl.classList.add("isOver");
+      wall.answerTimerEl.textContent = "時間になったよ";
+    }
 
     if (!wall.answerPromptShown) {
       wall.answerPromptShown = true;
@@ -327,13 +387,11 @@ function startAnswerTimer(seconds) {
   wall.answerActive = true;
   wall.answerPromptShown = false;
   wall.answerEndAt = Date.now() + safeSeconds * 1000;
+  wall.answerTimerEl = timerEl;
 
-  answerTimerBox.classList.remove("hidden");
-  answerTimerText.classList.remove("isOver");
   tickAnswerTimer();
   wall.answerTimerId = setInterval(tickAnswerTimer, 200);
 }
-// //***変更箇所**** ここまで
 
 function tickWallTimer() {
   const remaining = getWallRemainingSeconds();
@@ -370,13 +428,17 @@ async function send() {
     const reply = data?.reply ?? "";
     const answerLimitSeconds = data?.answerLimitSeconds ?? null;
     // //***変更箇所**** ここまで
-    addBubble(reply, "ai");
+    // //***変更箇所**** ここから：回答目安をAI返答バブル右下に表示
+    const aiBubble = addBubble(reply, "ai", {
+    answerLimitSeconds: mode === "wall5" ? answerLimitSeconds : null
+    });
+
     messages.push({ role: "assistant", content: reply });
 
-    // AIの質問にだけ回答用タイマーを出す
     if (mode === "wall5" && answerLimitSeconds) {
-      startAnswerTimer(answerLimitSeconds);
-    }
+    startAnswerTimer(answerLimitSeconds, aiBubble?.timerEl);
+  }
+  // //***変更箇所**** ここまで
 
   } catch (e) {
     addBubble("ごめんね、今はうまく話せないみたい。少しだけ時間をおいて、もう一度でもいい？", "ai");
@@ -455,7 +517,7 @@ inputEl.addEventListener("compositionend", () => {
 
 sendBtn.addEventListener("click", send);
 
-// //***変更箇所**** ここから：壁打ち用まとめるボタン
+// 壁打ち用まとめるボタン
 summarizeBtn?.addEventListener("click", async () => {
   if (mode !== "wall5") return;
 
@@ -479,9 +541,8 @@ summarizeBtn?.addEventListener("click", async () => {
     inputEl.focus();
   }
 });
-// //***変更箇所**** ここまで
 
-// //***変更箇所**** ここから：壁打ち時間変更
+// 壁打ち時間変更
 wallMinutesInput?.addEventListener("change", () => {
   const minutes = Math.max(1, Math.min(30, Number(wallMinutesInput.value) || 5));
   wallMinutesInput.value = String(minutes);
@@ -492,7 +553,6 @@ wallMinutesInput?.addEventListener("change", () => {
     progressBar.style.width = "0%";
   }
 });
-// //***変更箇所**** ここまで
 
 //Enter二重送信を修正
 inputEl.addEventListener("keydown", (e) => {
