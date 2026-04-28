@@ -82,7 +82,9 @@ function updateInputPlaceholder() {
 }
 // //***変更箇所**** ここまで
 
-function addBubble(text, who) {
+// //***変更箇所**** ここから：options引数を追加
+function addBubble(text, who, options = {}) {
+// //***変更箇所**** ここまで
   if (mode === "wall5") {
     const row = document.createElement("div");
     row.className = `wallRow ${who}`;
@@ -377,7 +379,9 @@ function tickAnswerTimer() {
   }
 }
 
-function startAnswerTimer(seconds) {
+// //***変更箇所**** ここから：timerEl引数を追加
+function startAnswerTimer(seconds, timerEl = null) {
+// //***変更箇所**** ここまで
   if (mode !== "wall5") return;
 
   stopAnswerTimer();
