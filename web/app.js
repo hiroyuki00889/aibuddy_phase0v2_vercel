@@ -455,10 +455,17 @@ async function send() {
 
 //終了時に memory を保存
 async function endSession() {
-  const closingRequest =
-    mode === "wall5"
-      ? "ここで壁打ちを終えたい。今までの内容を短くまとめて、次の一手を1つだけ出して。"
-      : "ここで会話を終えたい。今日を閉じる一言を、短く静かに添えて。";
+  // //***変更箇所**** ここから
+const closingRequest =
+  mode === "wall5"
+    ? "ここで壁打ちを終えたい。今までの内容を短くまとめて、次の一手を1つだけ出して。"
+    : `ここで会話を終えたい。
+
+雑談で心に残った気持ちを一言で表して。
+
+・有意義な時間だったことが伝わるようにする
+・一言〜二文程度で短くまとめる`;
+// //***変更箇所**** ここまで
 
   messages.push({ role: "user", content: closingRequest });
 
