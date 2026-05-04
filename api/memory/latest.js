@@ -13,7 +13,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    const latestMemory = await readLatestMemory();
+    // //***変更箇所**** ここから：modeごとに記憶を取得
+    const mode = req.query?.mode === "wall5" ? "wall5" : "free";
+    const latestMemory = await readLatestMemory(mode);
+    // //***変更箇所**** ここまで
 
     return res.status(200).json({
       latest_memory: latestMemory

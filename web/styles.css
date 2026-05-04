@@ -127,15 +127,32 @@ body.theme-dusk .chat {
   background: rgba(255, 255, 255, 0.35);
 }
 
-input {
+/* //***変更箇所**** ここから：textarea対応 */
+input,
+textarea {
   flex: 1;
   padding: 12px;
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.12);
   background: rgba(255, 255, 255, 0.72);
   color: #1f2328;
+  font-family: inherit;
+  font-size: 14px;
 }
-input:focus { outline: none; border-color: rgba(70, 130, 180, 0.55); }
+
+textarea {
+  min-height: 44px;
+  max-height: 140px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: rgba(70, 130, 180, 0.55);
+}
+/* //***変更箇所**** ここまで */
 
 .btn {
   padding: 10px 12px;

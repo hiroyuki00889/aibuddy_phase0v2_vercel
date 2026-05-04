@@ -58,11 +58,11 @@
     <main id="chat" class="chat" aria-live="polite"></main>
 
     <footer class="composer">
-      <input id="input" type="text" placeholder="今の気持ちを一言でも…" autocomplete="off" />
-      <!-- //***変更箇所**** ここから：送信ボタンとまとめるボタンの順番を入れ替え -->
+      <!-- //***変更箇所**** ここから：inputをtextareaに変更 -->
+      <textarea id="input" placeholder="今の気持ちを一言でも…" autocomplete="off" rows="2"></textarea>
+      <!-- //***変更箇所**** ここまで -->      
       <button id="sendBtn" class="btn">送信</button>
       <button id="summarizeBtn" class="btn ghost hidden">まとめる</button>
-      <!-- //***変更箇所**** ここまで -->
     </footer>
   </div>
 

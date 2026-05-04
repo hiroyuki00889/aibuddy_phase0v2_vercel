@@ -116,7 +116,9 @@ JSON形式:
       created_at: new Date().toISOString()
     };
 
-    await writeLatestMemory(latestMemory);
+    // //***変更箇所**** ここから：現在モードのキーに保存
+    await writeLatestMemory(latestMemory, latestMemory.mode);
+    // //***変更箇所**** ここまで
 
     return res.status(200).json({
       closing_message: parsed.closing_message.trim(),

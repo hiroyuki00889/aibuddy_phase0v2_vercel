@@ -97,7 +97,7 @@ function addBubble(text, who, options = {}) {
     content.className = "wallText";
     content.textContent = text;
 
-    // //***変更箇所**** ここから：AI返答バブル右下に回答目安を表示
+    // //***変更箇所**** ここから：カウントダウンではなく回答時間のみ表示
     let timerEl = null;
 
     if (who === "ai" && options.answerLimitSeconds) {
@@ -142,7 +142,9 @@ function getWallRemainingSeconds() {
 
 //memory取得API
 async function apiGetLatestMemory() {
-  const res = await fetch(`${API_BASE}/api/memory/latest`, {
+  // //***変更箇所**** ここから：現在のmodeをqueryで渡す
+  const res = await fetch(`${API_BASE}/api/memory/latest?mode=${encodeURIComponent(mode)}`, {
+  // //***変更箇所**** ここまで
     method: "GET",
     headers: {
       "x-access-code": accessCode
@@ -427,22 +429,18 @@ async function send() {
 
   try {
     setBusy(true);
-    // //***変更箇所**** ここから
+    
     const data = await apiChat();
     const reply = data?.reply ?? "";
     const answerLimitSeconds = data?.answerLimitSeconds ?? null;
-    // //***変更箇所**** ここまで
-    // //***変更箇所**** ここから：回答目安をAI返答バブル右下に表示
+    
+    // //***変更箇所**** ここから：回答目安をAI返答バブル右下に表示,回答時間は表示のみ。
     const aiBubble = addBubble(reply, "ai", {
     answerLimitSeconds: mode === "wall5" ? answerLimitSeconds : null
     });
 
     messages.push({ role: "assistant", content: reply });
-
-    if (mode === "wall5" && answerLimitSeconds) {
-    startAnswerTimer(answerLimitSeconds, aiBubble?.timerEl);
-  }
-  // //***変更箇所**** ここまで
+    // //***変更箇所**** ここまで
 
   } catch (e) {
     addBubble("ごめんね、今はうまく話せないみたい。少しだけ時間をおいて、もう一度でもいい？", "ai");
@@ -526,6 +524,16 @@ inputEl.addEventListener("compositionend", () => {
   isComposing = false;
 });
 
+// //***変更箇所**** ここから：合言葉入力でEnterキーでも入室
+passInput.addEventListener("keydown", (e) => {
+  if (e.key !== "Enter") return;
+  if (e.isComposing || isComposing || e.keyCode === 229) return;
+
+  e.preventDefault();
+  passBtn.click();
+});
+// //***変更箇所**** ここまで
+
 sendBtn.addEventListener("click", send);
 
 // 壁打ち用まとめるボタン
@@ -565,15 +573,19 @@ wallMinutesInput?.addEventListener("change", () => {
   }
 });
 
-//Enter二重送信を修正
+// //***変更箇所**** ここから：Shift+Enterで改行、Enter単体で送信、変換中は送信しない
 inputEl.addEventListener("keydown", (e) => {
   if (e.key !== "Enter") return;
   if (e.isComposing || isComposing || e.keyCode === 229) return;
-  if (e.shiftKey) return;
+
+  if (e.shiftKey) {
+    return;
+  }
 
   e.preventDefault();
   send();
 });
+// //***変更箇所**** ここまで
 
 endBtn.addEventListener("click", endSession);
 
