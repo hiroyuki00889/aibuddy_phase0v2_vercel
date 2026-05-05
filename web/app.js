@@ -144,7 +144,7 @@ function getWallRemainingSeconds() {
 async function apiGetLatestMemory() {
   // //***変更箇所**** ここから：現在のmodeをqueryで渡す
   const res = await fetch(`${API_BASE}/api/memory/latest?mode=${encodeURIComponent(mode)}`, {
-  // //***変更箇所**** ここまで
+  // //***変更箇所**** ここまでs
     method: "GET",
     headers: {
       "x-access-code": accessCode
@@ -188,6 +188,36 @@ async function apiChat() {
   const data = await res.json();
   return data;
 }
+
+// //***変更箇所**** ここから：AI返答を必ず文字列に整える
+function normalizeReply(data) {
+  const reply = data?.reply;
+
+  if (typeof reply === "string") return reply;
+
+  if (reply && typeof reply === "object") {
+    return reply.reply || JSON.stringify(reply);
+  }
+
+  if (typeof data === "string") return data;
+
+  return "";
+}
+
+function pushAssistantMessage(reply, answerLimitSeconds = null) {
+  if (mode === "wall5") {
+    messages.push({
+      role: "assistant",
+      content: JSON.stringify({
+        reply,
+        answerLimitSeconds
+      })
+    });
+  } else {
+    messages.push({ role: "assistant", content: reply });
+  }
+}
+// //***変更箇所**** ここまで
 
 //終了APIを分離
 async function apiEndSession() {
@@ -431,13 +461,16 @@ async function send() {
     setBusy(true);
     
     const data = await apiChat();
-    const reply = data?.reply ?? "";
+    // //***変更箇所**** ここから：[object Object]防止と壁打ち履歴保存を共通化
+    const reply = normalizeReply(data);
     const answerLimitSeconds = data?.answerLimitSeconds ?? null;
-    
-    // 回答目安をAI返答バブル右下に表示,回答時間は表示のみ。
+
     addBubble(reply, "ai", {
     answerLimitSeconds: mode === "wall5" ? answerLimitSeconds : null
     });
+
+    pushAssistantMessage(reply, answerLimitSeconds);
+    // //***変更箇所**** ここまで
 
     // //***変更箇所**** ここから：壁打ちではassistant履歴もJSON形式で保存する
     if (mode === "wall5") {
@@ -560,9 +593,16 @@ summarizeBtn?.addEventListener("click", async () => {
   try {
     setBusy(true);
     const data = await apiChat();
-    const reply = data?.reply ?? "";
-    addBubble(reply, "ai");
-    messages.push({ role: "assistant", content: reply });
+    // //***変更箇所**** ここから：[object Object]防止
+    const reply = normalizeReply(data);
+    const answerLimitSeconds = data?.answerLimitSeconds ?? null;
+
+    addBubble(reply, "ai", {
+    answerLimitSeconds: mode === "wall5" ? answerLimitSeconds : null
+    });
+
+    pushAssistantMessage(reply, answerLimitSeconds);
+    // //***変更箇所**** ここまで
   } catch (e) {
     addBubble("ごめんね、今はうまく話せないみたい。少しだけ時間をおいて、もう一度でもいい？", "ai");
     console.error(e);
