@@ -434,13 +434,24 @@ async function send() {
     const reply = data?.reply ?? "";
     const answerLimitSeconds = data?.answerLimitSeconds ?? null;
     
-    // //***変更箇所**** ここから：回答目安をAI返答バブル右下に表示,回答時間は表示のみ。
-    const aiBubble = addBubble(reply, "ai", {
+    // 回答目安をAI返答バブル右下に表示,回答時間は表示のみ。
+    addBubble(reply, "ai", {
     answerLimitSeconds: mode === "wall5" ? answerLimitSeconds : null
     });
 
-    messages.push({ role: "assistant", content: reply });
-    // //***変更箇所**** ここまで
+    // //***変更箇所**** ここから：壁打ちではassistant履歴もJSON形式で保存する
+    if (mode === "wall5") {
+      messages.push({
+        role: "assistant",
+        content: JSON.stringify({
+        reply,
+        answerLimitSeconds
+        })
+      });
+    } else {
+      messages.push({ role: "assistant", content: reply });
+    }
+// //***変更箇所**** ここまで
 
   } catch (e) {
     addBubble("ごめんね、今はうまく話せないみたい。少しだけ時間をおいて、もう一度でもいい？", "ai");
