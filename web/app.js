@@ -249,7 +249,7 @@ function buildMemoryIntro(memory) {
 
   // //***変更箇所**** ここから：モード別に前回要約と促し文を変更
   if (mode === "wall5") {
-    return `前回の壁打ちの続きから始められるよ。
+    return `前回の整理&GO！の続きから始められるよ。
 
 前回の要約：
 「${memory.summary}」
@@ -257,8 +257,8 @@ function buildMemoryIntro(memory) {
 次の一手：
 「${memory.next_action}」
 
-この続きで整理する？
-それとも、今日は別テーマで壁打ちする？`;
+この続きから始める？
+それとも、今日は別テーマでする？`;
   }
 
   return `お帰りなさい！今日はどうだった？
