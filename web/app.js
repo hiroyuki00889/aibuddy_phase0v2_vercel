@@ -182,7 +182,10 @@ async function apiChat() {
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(text);
+    // //***変更箇所**** ここから：APIエラー内容を確認しやすくする
+    console.error("apiChat failed:", res.status, text);
+    throw new Error(`apiChat failed: ${res.status} ${text}`);
+    // //***変更箇所**** ここまで
   }
 
   const data = await res.json();
@@ -296,10 +299,12 @@ async function boot() {
 
   if (mode === "wall5") {
     addBubble(
-      `【壁打ち】タイマーが動くよ。
+      // //***変更箇所**** ここから：機能名を変更
+      `【整理&GO！】考えを整理して、次にやることを1つ決めるよ。
 時間は ${Math.floor(wall.durationSeconds / 60)} 分にしてある。
 必要なら上で変更してから始めてね。
-「何をまとめたいか」を一文で教えて。`,
+「何を整理したいか」を一文で教えて。`,
+      // //***変更箇所**** ここまで
       "ai"
     );
   } else {
@@ -472,23 +477,19 @@ async function send() {
     pushAssistantMessage(reply, answerLimitSeconds);
     // //***変更箇所**** ここまで
 
-    // //***変更箇所**** ここから：壁打ちではassistant履歴もJSON形式で保存する
-    if (mode === "wall5") {
-      messages.push({
-        role: "assistant",
-        content: JSON.stringify({
-        reply,
-        answerLimitSeconds
-        })
-      });
-    } else {
-      messages.push({ role: "assistant", content: reply });
+    // //***変更箇所**** ここから：壁打ち回答タイマーを開始
+    if (mode === "wall5" && answerLimitSeconds) {
+      startAnswerTimer(answerLimitSeconds, bubbleResult.timerEl);
     }
-// //***変更箇所**** ここまで
+    // //***変更箇所**** ここまで
 
   } catch (e) {
-    addBubble("ごめんね、今はうまく話せないみたい。少しだけ時間をおいて、もう一度でもいい？", "ai");
-    console.error(e);
+    // //***変更箇所**** ここから：一時的に原因を画面にも出す
+    addBubble(
+      `ごめんね、今はうまく話せないみたい。\n\n原因確認用：${e.message}`,
+      "ai"
+    );
+    // //***変更箇所**** ここまで    console.error(e);
   } finally {
     setBusy(false);
     inputEl.focus();
