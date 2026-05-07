@@ -192,9 +192,7 @@ async function apiChat() {
   return data;
 }
 
-// //***変更箇所**** ここから：AI返答を必ず文字列に整える
-function normalizeReply(data) {
-  // //***変更箇所**** ここから：AI文章を読みやすく整形
+// //***変更箇所**** ここから：AI文章を読みやすく整形
 function formatAiText(text) {
   if (!text || typeof text !== "string") return "";
 
@@ -214,6 +212,9 @@ function formatAiText(text) {
     .trim();
 }
 // //***変更箇所**** ここまで
+
+// //***変更箇所**** ここから：AI返答を必ず文字列に整える
+function normalizeReply(data) {
   const reply = data?.reply;
 
   if (typeof reply === "string") return reply;
