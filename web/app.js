@@ -84,7 +84,9 @@ function updateInputPlaceholder() {
 
 // //***変更箇所**** ここから：options引数を追加
 function addBubble(text, who, options = {}) {
-// //***変更箇所**** ここまで
+// //***変更箇所**** ここから：AI表示時だけ文章を整形
+  const displayText = who === "ai" ? formatAiText(text) : text;
+  // //***変更箇所**** ここまで
   if (mode === "wall5") {
     const row = document.createElement("div");
     row.className = `wallRow ${who}`;
@@ -95,7 +97,9 @@ function addBubble(text, who, options = {}) {
 
     const content = document.createElement("div");
     content.className = "wallText";
-    content.textContent = text;
+    // //***変更箇所**** ここから
+    div.textContent = displayText;
+    // //***変更箇所**** ここまで
 
     // //***変更箇所**** ここから：カウントダウンではなく回答時間のみ表示
     let timerEl = null;
@@ -488,9 +492,8 @@ async function send() {
     
     const data = await apiChat();
     // [object Object]防止と壁打ち履歴保存を共通化
-    // //***変更箇所**** ここから：AI表示用整形
-    const rawReply = normalizeReply(data);
-    const reply = formatAiText(rawReply);
+    // //***変更箇所**** ここから：表示整形はaddBubble側に任せる
+    const reply = normalizeReply(data);
     // //***変更箇所**** ここまで
     const answerLimitSeconds = data?.answerLimitSeconds ?? null;
 
@@ -619,9 +622,8 @@ summarizeBtn?.addEventListener("click", async () => {
     setBusy(true);
     const data = await apiChat();
     // [object Object]防止
-    // //***変更箇所**** ここから：AI表示用整形
-    const rawReply = normalizeReply(data);
-    const reply = formatAiText(rawReply);
+    // //***変更箇所**** ここから：表示整形はaddBubble側に任せる
+    const reply = normalizeReply(data);
     // //***変更箇所**** ここまで
     const answerLimitSeconds = data?.answerLimitSeconds ?? null;
 
