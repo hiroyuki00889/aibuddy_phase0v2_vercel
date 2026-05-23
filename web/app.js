@@ -194,26 +194,6 @@ async function apiChat() {
 
 // //***変更箇所**** ここから：AI返答を必ず文字列に整える
 function normalizeReply(data) {
-  // //***変更箇所**** ここから：AI文章を読みやすく整形
-function formatAiText(text) {
-  if (!text || typeof text !== "string") return "";
-
-  return text
-    // 文末で改行
-    .replace(/。/g, "。\n")
-    .replace(/！/g, "！\n")
-    .replace(/？/g, "？\n")
-
-    // 箇条書きを見やすく
-    .replace(/・/g, "\n・")
-    .replace(/■/g, "\n■")
-
-    // 改行しすぎ防止
-    .replace(/\n{3,}/g, "\n\n")
-
-    .trim();
-}
-// //***変更箇所**** ここまで
   const reply = data?.reply;
 
   if (typeof reply === "string") return reply;
@@ -486,21 +466,18 @@ async function send() {
     setBusy(true);
     
     const data = await apiChat();
-    // [object Object]防止と壁打ち履歴保存を共通化
-    // //***変更箇所**** ここから：AI表示用整形
-    const rawReply = normalizeReply(data);
-    const reply = formatAiText(rawReply);
-    // //***変更箇所**** ここまで
+    // //***変更箇所**** ここから：[object Object]防止と壁打ち履歴保存を共通化
+    const reply = normalizeReply(data);
     const answerLimitSeconds = data?.answerLimitSeconds ?? null;
 
-    // //***変更箇所**** ここから：addBubbleの戻り値をbubbleResultに入れる
     const bubbleResult = addBubble(reply, "ai", {
-      answerLimitSeconds: mode === "wall5" ? answerLimitSeconds : null
+    answerLimitSeconds: mode === "wall5" ? answerLimitSeconds : null
     });
 
     pushAssistantMessage(reply, answerLimitSeconds);
+    // //***変更箇所**** ここまで
 
-    // 回答時間のカウントダウン開始
+    // //***変更箇所**** ここから：壁打ち回答タイマーを開始
     if (mode === "wall5" && answerLimitSeconds) {
       startAnswerTimer(answerLimitSeconds, bubbleResult.timerEl);
     }
@@ -617,11 +594,8 @@ summarizeBtn?.addEventListener("click", async () => {
   try {
     setBusy(true);
     const data = await apiChat();
-    // [object Object]防止
-    // //***変更箇所**** ここから：AI表示用整形
-    const rawReply = normalizeReply(data);
-    const reply = formatAiText(rawReply);
-    // //***変更箇所**** ここまで
+    // //***変更箇所**** ここから：[object Object]防止
+    const reply = normalizeReply(data);
     const answerLimitSeconds = data?.answerLimitSeconds ?? null;
 
     addBubble(reply, "ai", {
@@ -629,7 +603,7 @@ summarizeBtn?.addEventListener("click", async () => {
     });
 
     pushAssistantMessage(reply, answerLimitSeconds);
-    
+    // //***変更箇所**** ここまで
   } catch (e) {
     addBubble("ごめんね、今はうまく話せないみたい。少しだけ時間をおいて、もう一度でもいい？", "ai");
     console.error(e);
