@@ -207,6 +207,19 @@ function normalizeReply(data) {
   return "";
 }
 
+// //***変更箇所**** ここから：AI文章を読みやすく改行
+function formatAiReply(text) {
+  if (!text || typeof text !== "string") return "";
+
+  return text
+    .replace(/。/g, "。\n")
+    .replace(/？/g, "？\n")
+    .replace(/！/g, "！\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+// //***変更箇所**** ここまで
+
 function pushAssistantMessage(reply, answerLimitSeconds = null) {
   if (mode === "wall5") {
     messages.push({
@@ -394,13 +407,6 @@ function getAnswerRemainingSeconds() {
 function tickAnswerTimer() {
   const remaining = getAnswerRemainingSeconds();
 
-  // //***変更箇所**** ここから：AI返答バブル内のタイマーを更新
-  if (wall.answerTimerEl) {
-    wall.answerTimerEl.textContent =
-      remaining > 0 ? `回答目安 ${formatMMSS(remaining)}` : "回答目安 00:00";
-  }
-  // //***変更箇所**** ここまで
-
   if (remaining <= 0) {
     if (wall.answerTimerEl) {
       wall.answerTimerEl.classList.add("isOver");
@@ -467,7 +473,9 @@ async function send() {
     
     const data = await apiChat();
     // //***変更箇所**** ここから：[object Object]防止と壁打ち履歴保存を共通化
-    const reply = normalizeReply(data);
+    // //***変更箇所**** ここから：AI返答を改行整形
+    const reply = formatAiReply(normalizeReply(data));
+    // //***変更箇所**** ここまで
     const answerLimitSeconds = data?.answerLimitSeconds ?? null;
 
     const bubbleResult = addBubble(reply, "ai", {
@@ -595,7 +603,9 @@ summarizeBtn?.addEventListener("click", async () => {
     setBusy(true);
     const data = await apiChat();
     // //***変更箇所**** ここから：[object Object]防止
-    const reply = normalizeReply(data);
+    // //***変更箇所**** ここから：AI返答を改行整形
+    const reply = formatAiReply(normalizeReply(data));
+    // //***変更箇所**** ここまで
     const answerLimitSeconds = data?.answerLimitSeconds ?? null;
 
     addBubble(reply, "ai", {
