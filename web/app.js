@@ -595,8 +595,8 @@ summarizeBtn?.addEventListener("click", async () => {
 
   stopAnswerTimer();
 
-  const text = "ここまでをまとめて、今の結論と要点と次の一手を出して。" +
-  　　　　　     "Json形式で返さず、文章として返して。ただし、結論、要点、次の一手がわかるようにして。" ;
+  const text = 
+  "ここまでをまとめて、今の結論と要点と次の一手を出して。Json形式で返さず、文章として返して。ただし、結論、要点、次の一手がわかるようにして。" ;
   addBubble("まとめる", "user");
   messages.push({ role: "user", content: text });
 
