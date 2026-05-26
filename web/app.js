@@ -196,7 +196,25 @@ async function apiChat() {
 function normalizeReply(data) {
   const reply = data?.reply;
 
-  if (typeof reply === "string") return reply;
+  // //***変更箇所**** ここから：replyがJSON文字列の場合に見やすく整形
+  if (typeof reply === "string") {
+    try {
+      const parsed = JSON.parse(reply);
+
+      if (parsed?.結論 || parsed?.要点 || parsed?.次の一手) {
+        return [
+          parsed.結論 ? `結論：\n${parsed.結論}` : "",
+          Array.isArray(parsed.要点)
+            ? `要点：\n${parsed.要点.map((x) => `・${x}`).join("\n")}`
+            : "",
+          parsed.次の一手 ? `次の一手：\n${parsed.次の一手}` : ""
+        ].filter(Boolean).join("\n\n");
+      }
+    } catch {}
+
+    return reply;
+  }
+  // //***変更箇所**** ここまで
 
   if (reply && typeof reply === "object") {
     return reply.reply || JSON.stringify(reply);
