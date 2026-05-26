@@ -595,7 +595,8 @@ summarizeBtn?.addEventListener("click", async () => {
 
   stopAnswerTimer();
 
-  const text = "ここまでをまとめて、今の結論と要点と次の一手を出して。";
+  const text = "ここまでをまとめて、今の結論と要点と次の一手を出して。" +
+  　　　　　     "Json形式で返さず、文章として返して。ただし、結論、要点、次の一手がわかるようにして。" ;
   addBubble("まとめる", "user");
   messages.push({ role: "user", content: text });
 
@@ -603,34 +604,9 @@ summarizeBtn?.addEventListener("click", async () => {
     setBusy(true);
     const data = await apiChat();
     // //***変更箇所**** ここから：[object Object]防止
-    // //***変更箇所**** ここから：まとめ結果JSONだけ安全に整形,AI返答を改行整形
-    let reply = normalizeReply(data);
-
-    try {
-    const parsed = JSON.parse(reply);
-
-    if (parsed?.結論 || parsed?.要点 || parsed?.次の一手) {
-      reply = [
-        parsed.結論
-          ? `結論：\n${parsed.結論}`
-          : "",
-
-          Array.isArray(parsed.要点)
-            ? `要点：\n${parsed.要点.map(v => `・${v}`).join("\n")}`
-            : "",
-
-          parsed.次の一手
-            ? `次の一手：\n${parsed.次の一手}`
-            : ""
-        ]
-          .filter(Boolean)
-          .join("\n\n");
-      }
-    } catch {}
-
-    reply = formatAiReply(reply);
+    // //***変更箇所**** ここから：AI返答を改行整形
+    const reply = formatAiReply(normalizeReply(data));
     // //***変更箇所**** ここまで
-
     const answerLimitSeconds = data?.answerLimitSeconds ?? null;
 
     addBubble(reply, "ai", {
