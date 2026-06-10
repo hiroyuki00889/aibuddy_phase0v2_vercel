@@ -192,6 +192,30 @@ async function apiChat() {
   return data;
 }
 
+// //***変更箇所**** ここから：まとめ専用API
+async function apiSummarize() {
+  const res = await fetch(`${API_BASE}/api/summarize`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-access-code": accessCode
+    },
+    body: JSON.stringify({
+      messages,
+      mode
+    })
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("apiSummarize failed:", res.status, text);
+    throw new Error(`apiSummarize failed: ${res.status} ${text}`);
+  }
+
+  return await res.json();
+}
+// //***変更箇所**** ここまで
+
 // //***変更箇所**** ここから：AI返答を必ず文字列に整える
 function normalizeReply(data) {
   const reply = data?.reply;
@@ -595,57 +619,44 @@ summarizeBtn?.addEventListener("click", async () => {
 
   stopAnswerTimer();
 
-  const text = 'ここまでをまとめて、今の結論と要点と次の一手を出して。まとめる場合も、結論・要点・次の一手を別JSONキーに分けず、必ず reply の文字列内に入れること。';
+  // //***変更箇所**** ここから：まとめ専用APIを使う
   addBubble("まとめる", "user");
-  messages.push({ role: "user", content: text });
 
   try {
     setBusy(true);
-    const data = await apiChat();
-    // //***変更箇所**** ここから：[object Object]防止
-    // //***変更箇所**** ここから：まとめ結果JSONだけ安全に整形,AI返答を改行整形
-    let reply = normalizeReply(data);
 
-    try {
-    const parsed = JSON.parse(reply);
+    const data = await apiSummarize();
 
-    if (parsed?.結論 || parsed?.要点 || parsed?.次の一手) {
-      reply = [
-        parsed.結論
-          ? `結論：\n${parsed.結論}`
+    const reply = formatAiReply(
+      [
+        data?.summary ? `結論：\n${data.summary}` : "",
+        Array.isArray(data?.keyPoints) && data.keyPoints.length
+          ? `要点：\n${data.keyPoints.map(v => `・${v}`).join("\n")}`
           : "",
-
-          Array.isArray(parsed.要点)
-            ? `要点：\n${parsed.要点.map(v => `・${v}`).join("\n")}`
-            : "",
-
-          parsed.次の一手
-            ? `次の一手：\n${parsed.次の一手}`
-            : ""
-        ]
-          .filter(Boolean)
-          .join("\n\n");
-      }
-    } catch {}
-
-    reply = formatAiReply(reply);
-    // //***変更箇所**** ここまで
-
-    const answerLimitSeconds = data?.answerLimitSeconds ?? null;
+        data?.nextAction ? `次の一手：\n${data.nextAction}` : ""
+      ]
+        .filter(Boolean)
+        .join("\n\n")
+    );
 
     addBubble(reply, "ai", {
-    answerLimitSeconds: mode === "wall5" ? answerLimitSeconds : null
+      answerLimitSeconds: null
     });
 
-    pushAssistantMessage(reply, answerLimitSeconds);
-    // //***変更箇所**** ここまで
+    messages.push({
+      role: "user",
+      content: "ここまでをまとめて"
+    });
+
+    pushAssistantMessage(reply, null);
   } catch (e) {
-    addBubble("ごめんね、今はうまく話せないみたい。少しだけ時間をおいて、もう一度でもいい？", "ai");
+    addBubble("ごめんね、今はうまくまとめられなかった。もう一度だけ試してみて。", "ai");
     console.error(e);
   } finally {
     setBusy(false);
     inputEl.focus();
   }
+  // //***変更箇所**** ここまで
 });
 
 // 壁打ち時間変更
