@@ -18,40 +18,38 @@
 
   <div class="app">
     <header class="header">
-      <div>
+      <!-- //***変更箇所**** ここから：説明文の横に終了・設定時間・残り時間を配置 -->
+      <div class="headerMain">
         <h1>相棒AI（第二形態：今次Phase変更作業中につきエラー起こる可能性あり）</h1>
-        <p class="sub">あなたの相棒として何でも聞きたい</p>
+
+        <div class="subRow">
+          <p class="sub">あなたの相棒として何でも聞きたい</p>
+
+          <div class="sessionControls">
+            <button id="endBtn" class="btn ghost">セッション終了</button>
+
+            <div id="wallDurationBox" class="wallDurationBox hidden">
+              <label for="wallMinutesInput">設定時間</label>
+              <input id="wallMinutesInput" type="range" min="1" max="30" value="5" />
+              <span id="wallMinutesValue">5分</span>
+            </div>
+
+            <div class="timer" aria-live="polite">
+              <span id="timerText">--:--</span>
+              <div class="progress" aria-hidden="true">
+                <div id="progressBar" class="bar"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+      <!-- //***変更箇所**** ここまで -->
 
       <div class="headerRight">
         <div class="mode">
           <button id="modeWallBtn" class="btn chip">整理&GO！</button>
           <button id="modeFreeBtn" class="btn chip active">フリートーク</button>
         </div>
-
-        <!-- //***変更箇所**** ここから：壁打ち時間設定 -->
-        <div id="wallDurationBox" class="wallDurationBox hidden">
-          <label for="wallMinutesInput">壁打ち時間(1~30分)</label>
-          <input id="wallMinutesInput" type="number" min="1" max="30" value="5" />
-          <span>分</span>
-        </div>
-        <!-- //***変更箇所**** ここまで -->
-
-        <div class="timer" aria-live="polite">
-          <span id="timerText">--:--</span>
-          <div class="progress" aria-hidden="true">
-            <div id="progressBar" class="bar"></div>
-          </div>
-
-          <!-- //***変更箇所**** ここから：壁打ちの回答カウントダウン -->
-          <div id="answerTimerBox" class="answerTimerBox hidden">
-            <span class="answerTimerLabel">回答目安</span>
-            <span id="answerTimerText">--:--</span>
-          </div>
-          <!-- //***変更箇所**** ここまで -->
-        </div>
-
-        <button id="endBtn" class="btn ghost">セッション終了</button>
       </div>
     </header>
 

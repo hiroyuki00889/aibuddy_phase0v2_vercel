@@ -3,12 +3,12 @@ const inputEl = document.getElementById("input");
 const sendBtn = document.getElementById("sendBtn");
 const endBtn = document.getElementById("endBtn");
 
-// //***変更箇所**** ここから：壁打ち追加UI
+// 壁打ち追加UI
 const summarizeBtn = document.getElementById("summarizeBtn");
 const wallDurationBox = document.getElementById("wallDurationBox");
 const wallMinutesInput = document.getElementById("wallMinutesInput");
-const answerTimerBox = document.getElementById("answerTimerBox");
-const answerTimerText = document.getElementById("answerTimerText");
+// //***変更箇所**** ここから：スライダー表示用
+const wallMinutesValue = document.getElementById("wallMinutesValue");
 // //***変更箇所**** ここまで
 
 // Phase1: モード切替（5分壁打ち / フリートーク）
@@ -416,11 +416,6 @@ function stopAnswerTimer() {
     clearInterval(wall.answerTimerId);
     wall.answerTimerId = null;
   }
-
-  // //***変更箇所**** ここから：上部タイマーが残っていても安全に隠す
-  answerTimerText?.classList.remove("isOver");
-  answerTimerBox?.classList.add("hidden");
-  // //***変更箇所**** ここまで
 }
 
 function getAnswerRemainingSeconds() {
@@ -660,16 +655,22 @@ summarizeBtn?.addEventListener("click", async () => {
 });
 
 // 壁打ち時間変更
-wallMinutesInput?.addEventListener("change", () => {
+// //***変更箇所**** ここから：number入力からスライダー入力に変更
+wallMinutesInput?.addEventListener("input", () => {
   const minutes = Math.max(1, Math.min(30, Number(wallMinutesInput.value) || 5));
   wallMinutesInput.value = String(minutes);
   wall.durationSeconds = minutes * 60;
+
+  if (wallMinutesValue) {
+    wallMinutesValue.textContent = `${minutes}分`;
+  }
 
   if (!wall.isActive && mode === "wall5") {
     timerText.textContent = formatMMSS(wall.durationSeconds);
     progressBar.style.width = "0%";
   }
 });
+// //***変更箇所**** ここまで
 
 // //***変更箇所**** ここから：Shift+Enterで改行、Enter単体で送信、変換中は送信しない
 inputEl.addEventListener("keydown", (e) => {

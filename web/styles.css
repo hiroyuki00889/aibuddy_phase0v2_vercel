@@ -309,3 +309,46 @@ body.theme-wall .bubble { display: none; } /* 念のため（壁打ちでは bub
   display: none;
 }
 /* //***変更箇所**** ここまで */
+
+/* //***変更箇所**** ここから：ヘッダー内に終了・設定時間・残り時間を横並び配置 */
+.headerMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.subRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.sessionControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.wallDurationBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wallDurationBox input[type="range"] {
+  width: 120px;
+}
+
+#wallMinutesValue {
+  min-width: 36px;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+.timer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* //***変更箇所**** ここまで */
