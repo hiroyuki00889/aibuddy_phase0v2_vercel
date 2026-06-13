@@ -7,7 +7,8 @@ const endBtn = document.getElementById("endBtn");
 const summarizeBtn = document.getElementById("summarizeBtn");
 const wallDurationBox = document.getElementById("wallDurationBox");
 const wallMinutesInput = document.getElementById("wallMinutesInput");
-// //***変更箇所**** ここから：スライダー表示用
+// //***変更箇所**** ここから：整理&GO！の残り時間エリア
+const wallTimerBox = document.getElementById("wallTimerBox");
 const wallMinutesValue = document.getElementById("wallMinutesValue");
 // //***変更箇所**** ここまで
 
@@ -361,8 +362,11 @@ function setMode(nextMode) {
   // //***変更箇所**** ここまで
 
   // 壁打ちUIの表示切替
+  // //***変更箇所**** ここから：設定時間・残り時間は整理&GO！のみ表示
   wallDurationBox?.classList.toggle("hidden", mode !== "wall5");
+  wallTimerBox?.classList.toggle("hidden", mode !== "wall5");
   summarizeBtn?.classList.toggle("hidden", mode !== "wall5");
+  // //***変更箇所**** ここまで
   if (mode !== "wall5") {
     stopAnswerTimer();
   }

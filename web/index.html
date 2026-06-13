@@ -18,32 +18,36 @@
 
   <div class="app">
     <header class="header">
-      <!-- //***変更箇所**** ここから：説明文の横に終了・設定時間・残り時間を配置 -->
-      <div class="headerMain">
-        <h1>相棒AI（第二形態：今次Phase変更作業中につきエラー起こる可能性あり）</h1>
+      <!-- //***変更箇所**** ここから：ヘッダー構成を画像表示に合わせる -->
+  <div class="headerTop">
+    <div class="headerTitleArea">
+      <h1>AIbo！</h1>
+      <p class="sub">あなたの相棒として何でも聞きたい</p>
+    </div>
 
-        <div class="subRow">
-          <p class="sub">あなたの相棒として何でも聞きたい</p>
+    <div class="mode">
+      <button id="modeFreeBtn" class="btn chip active">フリートーク</button>
+      <button id="modeWallBtn" class="btn chip">整理&GO！</button>
+    </div>
+  </div>
 
-          <div class="sessionControls">
-            <button id="endBtn" class="btn ghost">セッション終了</button>
+  <div class="headerBottom">
+    <div id="wallDurationBox" class="wallDurationBox hidden">
+      <label for="wallMinutesInput">設定時間</label>
+      <input id="wallMinutesInput" type="range" min="1" max="30" value="5" />
+      <span id="wallMinutesValue">5分</span>
+    </div>
 
-            <div id="wallDurationBox" class="wallDurationBox hidden">
-              <label for="wallMinutesInput">設定時間</label>
-              <input id="wallMinutesInput" type="range" min="1" max="30" value="5" />
-              <span id="wallMinutesValue">5分</span>
-            </div>
-
-            <div class="timer" aria-live="polite">
-              <span id="timerText">--:--</span>
-              <div class="progress" aria-hidden="true">
-                <div id="progressBar" class="bar"></div>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div id="wallTimerBox" class="wallTimerBox hidden">
+      <span id="timerText">--:--</span>
+      <div class="progress" aria-hidden="true">
+        <div id="progressBar" class="bar"></div>
       </div>
-      <!-- //***変更箇所**** ここまで -->
+    </div>
+
+    <button id="endBtn" class="btn ghost sessionEndBtn">セッション終了</button>
+  </div>
+  <!-- //***変更箇所**** ここまで -->
 
       <div class="headerRight">
         <div class="mode">
