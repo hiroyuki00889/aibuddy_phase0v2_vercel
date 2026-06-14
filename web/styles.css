@@ -405,3 +405,26 @@ body.theme-wall .bubble { display: none; } /* 念のため（壁打ちでは bub
   display: none !important;
 }
 /* //***変更箇所**** ここまで */
+
+/* //***変更箇所**** ここから：整理&GO！でも画面幅いっぱいに広げる */
+body.theme-free .app,
+body.theme-wall .app,
+body.theme-dusk .app {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+body.theme-free .header,
+body.theme-wall .header,
+body.theme-dusk .header {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.headerTop,
+.headerBottom {
+  width: 100%;
+  box-sizing: border-box;
+}
+/* //***変更箇所**** ここまで */
