@@ -35,9 +35,10 @@ body.theme-dusk {
 
 /* App panel (glass on cafe / plain on notebook) */
 .app {
-  /* //***変更箇所**** ここから：ヘッダーを画面幅に近づける */
-  width: min(100%, 1400px);
+  /* //***変更箇所**** ここから：Window幅に連動させる */
+  width: 100%;
   max-width: none;
+  box-sizing: border-box;
   /* //***変更箇所**** ここまで */
   margin: 0 auto;
   height: 100vh;
@@ -68,6 +69,10 @@ body.theme-wall .app {
   align-items: center;
   justify-content: space-between;
   padding: 16px 16px 8px;
+  /* //***変更箇所**** ここから */
+  width: 100%;
+  box-sizing: border-box;
+  /* //***変更箇所**** ここまで */
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
@@ -389,5 +394,14 @@ body.theme-wall .bubble { display: none; } /* 念のため（壁打ちでは bub
   min-width: 180px;
   padding: 14px 22px;
   border-radius: 16px;
+}
+/* //***変更箇所**** ここまで */
+
+/* //***変更箇所**** ここから：hiddenが後続のdisplay:flexに負けないようにする */
+.hidden,
+.wallDurationBox.hidden,
+.wallTimerBox.hidden,
+#summarizeBtn.hidden {
+  display: none !important;
 }
 /* //***変更箇所**** ここまで */
