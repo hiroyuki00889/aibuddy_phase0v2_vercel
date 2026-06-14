@@ -35,7 +35,10 @@ body.theme-dusk {
 
 /* App panel (glass on cafe / plain on notebook) */
 .app {
-  max-width: 1400px;
+  /* //***変更箇所**** ここから：ヘッダーを画面幅に近づける */
+  width: min(100%, 1400px);
+  max-width: none;
+  /* //***変更箇所**** ここまで */
   margin: 0 auto;
   height: 100vh;
   display: flex;

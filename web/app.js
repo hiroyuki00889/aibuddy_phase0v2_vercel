@@ -357,28 +357,30 @@ function setMode(nextMode) {
 
   applyThemeByMode();
 
-  // //***変更箇所**** ここから：モード切替時に入力文言も変更
+  // モード切替時に入力文言も変更
   updateInputPlaceholder();
-  // //***変更箇所**** ここまで
 
-  // 壁打ちUIの表示切替
-  // //***変更箇所**** ここから：設定時間・残り時間は整理&GO！のみ表示
-  wallDurationBox?.classList.toggle("hidden", mode !== "wall5");
-  wallTimerBox?.classList.toggle("hidden", mode !== "wall5");
-  summarizeBtn?.classList.toggle("hidden", mode !== "wall5");
-  // //***変更箇所**** ここまで
-  if (mode !== "wall5") {
-    stopAnswerTimer();
-  }
+  // //***変更箇所**** ここから：時間UIは整理&GO！だけ表示
+  const isWallMode = mode === "wall5";
 
-  if (mode === "free") {
+  wallDurationBox?.classList.toggle("hidden", !isWallMode);
+  wallTimerBox?.classList.toggle("hidden", !isWallMode);
+  summarizeBtn?.classList.toggle("hidden", !isWallMode);
+
+  if (!isWallMode) {
     stopWallTimer();
     timerText.textContent = "--:--";
     progressBar.style.width = "0%";
-  } else {
-    timerText.textContent = "05:00";
-    progressBar.style.width = "0%";
+    return;
   }
+
+  const minutes = Math.max(1, Math.min(30, Number(wallMinutesInput?.value || 5)));
+  wall.durationSeconds = minutes * 60;
+  if (wallMinutesValue) wallMinutesValue.textContent = `${minutes}分`;
+
+  timerText.textContent = formatMMSS(wall.durationSeconds);
+  progressBar.style.width = "0%";
+  // //***変更箇所**** ここまで
 }
 
 function startWallTimerIfNeeded() {
@@ -390,6 +392,7 @@ function startWallTimerIfNeeded() {
   wall.timerId = setInterval(tickWallTimer, 200);
 }
 
+//session終了時とモード切替時に壁打ちタイマーを止める
 function stopWallTimer() {
   wall.isActive = false;
   wall.endAt = 0;
