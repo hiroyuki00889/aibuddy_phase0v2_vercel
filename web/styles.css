@@ -428,3 +428,34 @@ body.theme-dusk .header {
   box-sizing: border-box;
 }
 /* //***変更箇所**** ここまで */
+
+/* //***変更箇所**** ここから：時間UI左・終了ボタン右に固定 */
+.headerBottom {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.wallControls {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.sessionEndBtn {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.wallDurationBox input[type="range"] {
+  width: clamp(120px, 18vw, 260px);
+}
+
+.wallTimerBox .progress {
+  width: clamp(120px, 18vw, 260px);
+}
+/* //***変更箇所**** ここまで */
