@@ -274,11 +274,6 @@ body.theme-wall .bubble { display: none; } /* 念のため（壁打ちでは bub
   font-size: 13px;
 }
 
-.wallDurationBox input {
-  width: 64px;
-  padding: 8px 10px;
-}
-
 /* //***変更箇所**** ここから：壁打ちAI返答内の回答目安 */
 .wallAnswerTimer {
   margin-top: 8px;
@@ -360,15 +355,20 @@ body.theme-wall .bubble { display: none; } /* 念のため（壁打ちでは bub
   white-space: nowrap;
 }
 
-/* //***変更箇所**** ここから：設定時間スライダーを正常に操作できるようにする */
-.wallDurationBox input[type="range"] {
-  flex: 0 1 auto;
+/* //***変更箇所**** ここから：range専用に完全分離 */
+#wallMinutesInput {
+  display: block;
+  width: clamp(140px, 18vw, 260px);
+  min-width: 140px;
+  height: 28px;
+  flex: 0 0 auto;
   padding: 0;
-  border: none;
+  margin: 0;
+  border: 0;
   background: transparent;
   cursor: pointer;
   accent-color: #1677ff;
-  touch-action: pan-y;
+  pointer-events: auto;
 }
 /* //***変更箇所**** ここまで */
 
@@ -457,10 +457,6 @@ body.theme-dusk .header {
 .sessionEndBtn {
   margin-left: auto;
   flex-shrink: 0;
-}
-
-.wallDurationBox input[type="range"] {
-  width: clamp(120px, 18vw, 260px);
 }
 
 .wallTimerBox .progress {
