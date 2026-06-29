@@ -695,3 +695,73 @@ body.theme-dusk .header {
   }
 }
 /* //***変更箇所**** ここまで */
+
+/* //***変更箇所**** ここから：ヘッダー下段の重なりを防止してスライダーを操作可能にする */
+.headerBottom {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.wallControls {
+  grid-column: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 2;
+}
+
+.headerActions {
+  grid-column: 2;
+  margin-left: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-self: end;
+  position: relative;
+  z-index: 1;
+}
+
+#wallMinutesInput {
+  position: relative;
+  z-index: 3;
+  pointer-events: auto;
+  user-select: none;
+}
+
+.myPageBtn,
+.sessionEndBtn {
+  user-select: none;
+}
+
+/* 狭い画面では上下に分けて、絶対に重ならないようにする */
+@media (max-width: 820px) {
+  .headerBottom {
+    grid-template-columns: 1fr;
+  }
+
+  .wallControls {
+    grid-column: 1;
+    width: 100%;
+  }
+
+  .headerActions {
+    grid-column: 1;
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 560px) {
+  .headerActions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+/* //***変更箇所**** ここまで */
