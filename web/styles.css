@@ -135,8 +135,8 @@ body.theme-dusk .chat {
   background: rgba(255, 255, 255, 0.35);
 }
 
-/* //***変更箇所**** ここから：textarea対応 */
-input,
+/* //***変更箇所**** ここから：range以外の入力欄だけに通常入力スタイルを適用 */
+input:not([type="range"]),
 textarea {
   flex: 1;
   padding: 12px;
@@ -155,7 +155,7 @@ textarea {
   line-height: 1.5;
 }
 
-input:focus,
+input:not([type="range"]):focus,
 textarea:focus {
   outline: none;
   border-color: rgba(70, 130, 180, 0.55);
@@ -360,9 +360,17 @@ body.theme-wall .bubble { display: none; } /* 念のため（壁打ちでは bub
   white-space: nowrap;
 }
 
+/* //***変更箇所**** ここから：設定時間スライダーを正常に操作できるようにする */
 .wallDurationBox input[type="range"] {
-  width: 220px;
+  flex: 0 1 auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  accent-color: #1677ff;
+  touch-action: pan-y;
 }
+/* //***変更箇所**** ここまで */
 
 #wallMinutesValue {
   min-width: 42px;
