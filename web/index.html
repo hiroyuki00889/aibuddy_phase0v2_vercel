@@ -18,7 +18,7 @@
 
   <div class="app">
     <header class="header">
-      <!-- //***変更箇所**** ここから：ヘッダー構成を画像表示に合わせる -->
+      <!-- //ヘッダー構成を画像表示に合わせる -->
   <div class="headerTop">
     <div class="headerTitleArea">
       <h1>AIbo！</h1>
@@ -32,7 +32,7 @@
   </div>
 
   <div class="headerBottom">
-    <!-- //***変更箇所**** ここから：左側の時間UIをまとめる -->
+    <!-- //左側の時間UIをまとめる -->
     <div class="wallControls">
       <div id="wallDurationBox" class="wallDurationBox hidden">
         <label for="wallMinutesInput">設定時間</label>
@@ -47,19 +47,23 @@
         </div>
       </div>
     </div>
+
+    <!-- //***変更箇所**** ここから：マイページボタン追加 -->
+    <div class="headerActions">
+      <button id="myPageBtn" class="btn ghost myPageBtn">マイページ</button>
+      <button id="endBtn" class="btn ghost sessionEndBtn">セッション終了</button>
+    </div>
     <!-- //***変更箇所**** ここまで -->
 
     <button id="endBtn" class="btn ghost sessionEndBtn">セッション終了</button>
   </div>
-  <!-- //***変更箇所**** ここまで -->
     </header>
 
     <main id="chat" class="chat" aria-live="polite"></main>
 
     <footer class="composer">
-      <!-- //***変更箇所**** ここから：inputをtextareaに変更 -->
+      <!-- //inputをtextareaに変更 -->
       <textarea id="input" placeholder="今の気持ちを一言でも…" autocomplete="off" rows="2"></textarea>
-      <!-- //***変更箇所**** ここまで -->      
       <button id="sendBtn" class="btn">送信</button>
       <button id="summarizeBtn" class="btn ghost hidden">まとめる</button>
     </footer>
@@ -75,6 +79,99 @@
       </div>
     </div>
   </div>
+
+  <!-- //***変更箇所**** ここから：マイページモーダル追加 -->
+  <div id="myPageModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modalCard myPageCard">
+      <div class="myPageHeader">
+        <div>
+          <h2>マイページ</h2>
+          <p>AIbo！の利用情報とサービス案内</p>
+        </div>
+        <button id="myPageCloseBtn" class="btn ghost">閉じる</button>
+      </div>
+
+      <div class="myPageGrid">
+        <nav class="myPageMenu" aria-label="マイページメニュー">
+          <button class="myPageMenuItem active" data-page="terms">利用規約</button>
+          <button class="myPageMenuItem" data-page="privacy">プライバシーポリシー</button>
+          <button class="myPageMenuItem" data-page="contact">お問い合わせ</button>
+        </nav>
+
+        <section class="myPageContent">
+          <article id="page-terms" class="myPagePanel active">
+            <h3>AIbo！ 利用規約</h3>
+
+            <h4>第1条（サービス）</h4>
+            <p>AIbo！は、AIとの会話を通じて思考整理や日常会話を支援するWebサービスです。</p>
+
+            <h4>第2条（利用条件）</h4>
+            <p>利用者は、本規約に同意したうえで本サービスを利用するものとします。</p>
+
+            <h4>第3条（アカウント）</h4>
+            <p>利用者は、今後提供されるユーザー登録機能を通じてアカウントを作成し、利用する場合があります。アカウント管理は利用者自身の責任で行ってください。</p>
+
+            <h4>第4条（禁止事項）</h4>
+            <p>法令違反、不正アクセス、他人への迷惑行為、サービスへの過度な負荷、AIの不具合を悪用する行為を禁止します。</p>
+
+            <h4>第5条（AIの回答）</h4>
+            <p>本サービスは生成AIを利用しています。AIの回答は誤りを含む場合があります。医療・法律・投資など重要な判断は、専門家や公的機関の情報をご確認ください。</p>
+
+            <h4>第6条（会話データ）</h4>
+            <p>本サービスでは、会話内容、前回要約、次の一手、利用日時、モード情報などを保存する場合があります。</p>
+
+            <h4>第7条（免責）</h4>
+            <p>運営者は、本サービスの利用によって生じた損害について、故意または重大な過失がある場合を除き責任を負いません。</p>
+
+            <h4>第8条（規約変更）</h4>
+            <p>本規約は、必要に応じて変更する場合があります。</p>
+          </article>
+
+          <article id="page-privacy" class="myPagePanel">
+            <h3>AIbo！ プライバシーポリシー</h3>
+
+            <h4>1. 取得する情報</h4>
+            <p>本サービスでは、アカウント情報、メールアドレス、会話内容、前回要約、次の一手、利用日時、IPアドレス、ブラウザ情報、Cookie、エラー情報、利用状況を取得する場合があります。</p>
+
+            <h4>2. 利用目的</h4>
+            <p>取得した情報は、ログイン管理、ユーザーごとの記憶保存、サービス提供、品質改善、不具合調査、セキュリティ対策、お問い合わせ対応に利用します。</p>
+
+            <h4>3. AIサービスへの送信</h4>
+            <p>AIの回答生成のため、必要な会話内容をAI提供事業者へ送信します。</p>
+
+            <h4>4. 保存期間</h4>
+            <p>会話データ等はサービス提供に必要な期間保存します。削除依頼があった場合は、法令上保存が必要な場合を除き、合理的な期間内に削除します。</p>
+
+            <h4>5. 第三者提供</h4>
+            <p>法令に基づく場合を除き、本人の同意なく第三者へ個人情報を提供しません。</p>
+
+            <h4>6. アクセス解析・広告</h4>
+            <p>サービス改善のためアクセス解析ツールを利用する場合があります。将来的に広告を表示する場合は、本ポリシーを更新します。</p>
+
+            <h4>7. お問い合わせ</h4>
+            <p>個人情報の開示・訂正・削除等については、お問い合わせ窓口よりご連絡ください。</p>
+          </article>
+
+          <article id="page-contact" class="myPagePanel">
+            <h3>お問い合わせ</h3>
+            <p>現在、お問い合わせフォームを準備中です。</p>
+            <p>正式リリース時には、不具合報告、感想、改善要望、データ削除依頼を受け付けられるようにします。</p>
+
+            <div class="contactPlaceholder">
+              <p>今後追加予定：</p>
+              <ul>
+                <li>不具合報告</li>
+                <li>感想・改善要望</li>
+                <li>データ削除依頼</li>
+                <li>アカウント関連の問い合わせ</li>
+              </ul>
+            </div>
+          </article>
+        </section>
+      </div>
+    </div>
+  </div>
+  <!-- //***変更箇所**** ここまで -->
 
   <script src="./app.js"></script>
 </body>

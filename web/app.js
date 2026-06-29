@@ -7,10 +7,9 @@ const endBtn = document.getElementById("endBtn");
 const summarizeBtn = document.getElementById("summarizeBtn");
 const wallDurationBox = document.getElementById("wallDurationBox");
 const wallMinutesInput = document.getElementById("wallMinutesInput");
-// //***変更箇所**** ここから：整理&GO！の残り時間エリア
+// 整理&GO！の残り時間エリア
 const wallTimerBox = document.getElementById("wallTimerBox");
 const wallMinutesValue = document.getElementById("wallMinutesValue");
-// //***変更箇所**** ここまで
 
 // Phase1: モード切替（5分壁打ち / フリートーク）
 const modeWallBtn = document.getElementById("modeWallBtn");
@@ -22,6 +21,14 @@ const modal = document.getElementById("modal");
 const closingTextEl = document.getElementById("closingText");
 const resetBtn = document.getElementById("resetBtn");
 const closeBtn = document.getElementById("closeBtn");
+
+// //***変更箇所**** ここから：マイページ関連DOM
+const myPageBtn = document.getElementById("myPageBtn");
+const myPageModal = document.getElementById("myPageModal");
+const myPageCloseBtn = document.getElementById("myPageCloseBtn");
+const myPageMenuItems = document.querySelectorAll(".myPageMenuItem");
+const myPagePanels = document.querySelectorAll(".myPagePanel");
+// //***変更箇所**** ここまで
 
 const gate = document.getElementById("gate");
 const passInput = document.getElementById("passInput");
@@ -703,6 +710,47 @@ closeBtn.addEventListener("click", () => {
   modal.classList.add("hidden");
   applyThemeByMode();
 });
+
+// //***変更箇所**** ここから：マイページモーダル制御
+function openMyPage() {
+  myPageModal?.classList.remove("hidden");
+}
+
+function closeMyPage() {
+  myPageModal?.classList.add("hidden");
+}
+
+function switchMyPage(pageName) {
+  myPageMenuItems.forEach((item) => {
+    item.classList.toggle("active", item.dataset.page === pageName);
+  });
+
+  myPagePanels.forEach((panel) => {
+    panel.classList.toggle("active", panel.id === `page-${pageName}`);
+  });
+}
+
+myPageBtn?.addEventListener("click", openMyPage);
+myPageCloseBtn?.addEventListener("click", closeMyPage);
+
+myPageModal?.addEventListener("click", (e) => {
+  if (e.target === myPageModal) {
+    closeMyPage();
+  }
+});
+
+myPageMenuItems.forEach((item) => {
+  item.addEventListener("click", () => {
+    switchMyPage(item.dataset.page);
+  });
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    closeMyPage();
+  }
+});
+// //***変更箇所**** ここまで
 
 modeWallBtn?.addEventListener("click", () => {
   setMode("wall5");
