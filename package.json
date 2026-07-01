@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "@upstash/redis": "^1.37.0"
+    "@upstash/redis": "^1.37.0",
+    "resend": "^6.16.0"
   }
 }

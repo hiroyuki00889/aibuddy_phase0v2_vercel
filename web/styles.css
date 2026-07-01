@@ -765,3 +765,87 @@ body.theme-dusk .header {
   }
 }
 /* //***変更箇所**** ここまで */
+
+/* //***変更箇所**** ここから：お問い合わせフォーム */
+
+.contactForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 720px;
+}
+
+.contactField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.contactField span {
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.82;
+}
+
+.contactField input,
+.contactField textarea,
+.contactField select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.72);
+  color: #1f2328;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.contactField textarea {
+  min-height: 140px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.contactField input:focus,
+.contactField textarea:focus,
+.contactField select:focus {
+  outline: none;
+  border-color: rgba(70, 130, 180, 0.55);
+}
+
+.contactNote {
+  margin: 0;
+  font-size: 12px;
+  opacity: 0.72;
+}
+
+.contactActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.contactStatus {
+  min-height: 1.5em;
+  margin: 0;
+  font-size: 13px;
+}
+
+.contactStatus.success {
+  color: #1b7f3a;
+}
+
+.contactStatus.error {
+  color: #c62828;
+}
+
+@media (max-width: 560px) {
+  .contactActions {
+    justify-content: stretch;
+  }
+
+  .contactActions .btn {
+    width: 100%;
+  }
+}
+/* //***変更箇所**** ここまで */

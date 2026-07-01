@@ -22,12 +22,20 @@ const closingTextEl = document.getElementById("closingText");
 const resetBtn = document.getElementById("resetBtn");
 const closeBtn = document.getElementById("closeBtn");
 
-// //***変更箇所**** ここから：マイページ関連DOM
+// マイページ関連DOM
 const myPageBtn = document.getElementById("myPageBtn");
 const myPageModal = document.getElementById("myPageModal");
 const myPageCloseBtn = document.getElementById("myPageCloseBtn");
 const myPageMenuItems = document.querySelectorAll(".myPageMenuItem");
 const myPagePanels = document.querySelectorAll(".myPagePanel");
+
+// //***変更箇所**** ここから：お問い合わせフォーム関連DOM
+const contactForm = document.getElementById("contactForm");
+const contactType = document.getElementById("contactType");
+const contactEmail = document.getElementById("contactEmail");
+const contactMessage = document.getElementById("contactMessage");
+const contactSubmitBtn = document.getElementById("contactSubmitBtn");
+const contactStatus = document.getElementById("contactStatus");
 // //***変更箇所**** ここまで
 
 const gate = document.getElementById("gate");
@@ -748,6 +756,91 @@ myPageMenuItems.forEach((item) => {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     closeMyPage();
+  }
+});
+// //***変更箇所**** ここまで
+
+// //***変更箇所**** ここから：お問い合わせ送信
+async function apiContact(payload) {
+  const res = await fetch(`${API_BASE}/api/contact`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-access-code": accessCode
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data?.error || "お問い合わせの送信に失敗しました。");
+  }
+
+  return data;
+}
+
+function setContactBusy(isBusy) {
+  if (contactSubmitBtn) {
+    contactSubmitBtn.disabled = isBusy;
+    contactSubmitBtn.textContent = isBusy ? "送信中…" : "送信する";
+  }
+
+  if (contactType) contactType.disabled = isBusy;
+  if (contactEmail) contactEmail.disabled = isBusy;
+  if (contactMessage) contactMessage.disabled = isBusy;
+}
+
+function setContactStatus(message, status = "") {
+  if (!contactStatus) return;
+
+  contactStatus.textContent = message;
+  contactStatus.classList.remove("success", "error");
+
+  if (status) {
+    contactStatus.classList.add(status);
+  }
+}
+
+contactForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const type = contactType?.value.trim() || "";
+  const email = contactEmail?.value.trim() || "";
+  const message = contactMessage?.value.trim() || "";
+
+  if (!type) {
+    setContactStatus("お問い合わせ種別を選択してください。", "error");
+    return;
+  }
+
+  if (!message || message.length < 5) {
+    setContactStatus("お問い合わせ内容を5文字以上で入力してください。", "error");
+    return;
+  }
+
+  try {
+    setContactBusy(true);
+    setContactStatus("");
+
+    await apiContact({
+      type,
+      email,
+      message,
+      mode,
+      userAgent: navigator.userAgent
+    });
+
+    setContactStatus("送信しました。ありがとうございます。", "success");
+
+    contactType.value = "";
+    contactEmail.value = "";
+    contactMessage.value = "";
+  } catch (e) {
+    console.error(e);
+    setContactStatus(e.message || "送信に失敗しました。時間をおいてもう一度お試しください。", "error");
+  } finally {
+    setContactBusy(false);
   }
 });
 // //***変更箇所**** ここまで
