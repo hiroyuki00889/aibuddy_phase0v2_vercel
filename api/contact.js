@@ -104,8 +104,9 @@ export default async function handler(req, res) {
     <pre style="white-space: pre-wrap; font-family: sans-serif;">${escapeHtml(safeMessage)}</pre>
   `;
 
+  //***変更箇所**** ここから：Resendのエラーを正しく検知する
   try {
-    const result = await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: contactFromEmail,
       to: contactToEmail,
       replyTo: safeEmail || undefined,
@@ -114,9 +115,16 @@ export default async function handler(req, res) {
       html
     });
 
+    if (error) {
+      console.error("resend error:", error);
+      return res.status(500).json({
+        error: error.message || "メール送信サービスでエラーが発生しました。"
+      });
+    }
+
     return res.status(200).json({
       ok: true,
-      id: result?.data?.id || null
+      id: data?.id || null
     });
   } catch (error) {
     console.error("contact send failed:", error);
@@ -124,4 +132,5 @@ export default async function handler(req, res) {
       error: "お問い合わせの送信に失敗しました。時間をおいてもう一度お試しください。"
     });
   }
+  //***変更箇所**** ここまで
 }
