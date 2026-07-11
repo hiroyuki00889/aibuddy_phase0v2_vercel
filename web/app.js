@@ -760,16 +760,18 @@ document.addEventListener("keydown", (e) => {
 });
 // //***変更箇所**** ここまで
 
-// お問い合わせ送信
-// //***変更箇所**** ここから：API通信状況を確認できるように改善
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    closeMyPage();
+  }
+});
+// //***変更箇所**** ここまで
+
+// //***変更箇所**** ここから：お問い合わせ送信処理
 async function apiContact(payload) {
   const endpoint = `${API_BASE}/api/contact`;
 
   console.log("contact endpoint:", endpoint);
-  console.log("contact payload:", {
-    ...payload,
-    email: payload.email ? "[入力あり]" : "[未入力]"
-  });
 
   let res;
 
@@ -790,7 +792,6 @@ async function apiContact(payload) {
   }
 
   const responseText = await res.text();
-
   let data = {};
 
   if (responseText) {
@@ -809,13 +810,12 @@ async function apiContact(payload) {
 
     throw new Error(
       data?.error ||
-        `お問い合わせの送信に失敗しました。（HTTP ${res.status}）`
+      `お問い合わせの送信に失敗しました。（HTTP ${res.status}）`
     );
   }
 
   return data;
 }
-// //***変更箇所**** ここまで
 
 function setContactBusy(isBusy) {
   if (contactSubmitBtn) {
@@ -828,7 +828,6 @@ function setContactBusy(isBusy) {
   if (contactMessage) contactMessage.disabled = isBusy;
 }
 
-f// //***変更箇所**** ここから：画面に確実に状態を表示
 function setContactStatus(message, status = "") {
   if (!contactStatus) {
     console.error("contactStatusが見つかりません:", message);
@@ -844,25 +843,21 @@ function setContactStatus(message, status = "") {
     contactStatus.classList.add("sending");
   }
 }
-// //***変更箇所**** ここまで
 
-contactForm?.addEventListener("submit", async (e) => {
-  // //***変更箇所**** ここから：問い合わせ送信処理を関数化して確実に登録
 async function submitContactForm(e) {
-  if (e) {
-    e.preventDefault();
-  }
+  e.preventDefault();
 
   console.log("contact submit started");
-
-  setContactStatus("送信内容を確認しています…");
 
   const type = contactType?.value?.trim() || "";
   const email = contactEmail?.value?.trim() || "";
   const message = contactMessage?.value?.trim() || "";
 
   if (!type) {
-    setContactStatus("お問い合わせ種別を選択してください。", "error");
+    setContactStatus(
+      "お問い合わせ種別を選択してください。",
+      "error"
+    );
     contactType?.focus();
     return;
   }
@@ -889,8 +884,6 @@ async function submitContactForm(e) {
     setContactBusy(true);
     setContactStatus("送信しています…");
 
-    console.log("calling /api/contact");
-
     const result = await apiContact({
       type,
       email,
@@ -914,7 +907,7 @@ async function submitContactForm(e) {
 
     setContactStatus(
       error?.message ||
-        "送信に失敗しました。時間をおいてもう一度お試しください。",
+      "送信に失敗しました。時間をおいてもう一度お試しください。",
       "error"
     );
   } finally {
@@ -924,13 +917,8 @@ async function submitContactForm(e) {
 
 function initializeContactForm() {
   if (!contactForm) {
-    console.error("contactFormが見つかりません。index.htmlのidを確認してください。");
-    return;
-  }
-
-  if (!contactSubmitBtn) {
     console.error(
-      "contactSubmitBtnが見つかりません。index.htmlのidを確認してください。"
+      "contactFormが見つかりません。index.htmlのidを確認してください。"
     );
     return;
   }
@@ -942,6 +930,10 @@ function initializeContactForm() {
 
 initializeContactForm();
 // //***変更箇所**** ここまで
+
+modeWallBtn?.addEventListener("click", () => {
+  setMode("wall5");
+  reset();
 });
 
 modeWallBtn?.addEventListener("click", () => {
