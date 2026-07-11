@@ -831,6 +831,13 @@ body.theme-dusk .header {
   font-size: 13px;
 }
 
+/* //***変更箇所**** ここから：送信中表示 */
+.contactStatus.sending {
+  color: #4b5563;
+  font-weight: 600;
+}
+/* //***変更箇所**** ここまで */
+
 .contactStatus.success {
   color: #1b7f3a;
 }

@@ -156,7 +156,9 @@
             <h3>お問い合わせ</h3>
             <p>不具合報告、感想、改善要望、データ削除依頼などはこちらから送れます。</p>
 
-            <form id="contactForm" class="contactForm">
+            <!-- //***変更箇所**** ここから：ブラウザ標準検証ではなくJS側で検証する -->
+            <form id="contactForm" class="contactForm" novalidate>
+            <!-- //***変更箇所**** ここまで -->
               <label class="contactField">
                 <span>お問い合わせ種別</span>
                 <select id="contactType" required>

@@ -760,25 +760,62 @@ document.addEventListener("keydown", (e) => {
 });
 // //***変更箇所**** ここまで
 
-// //***変更箇所**** ここから：お問い合わせ送信
+// お問い合わせ送信
+// //***変更箇所**** ここから：API通信状況を確認できるように改善
 async function apiContact(payload) {
-  const res = await fetch(`${API_BASE}/api/contact`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-access-code": accessCode
-    },
-    body: JSON.stringify(payload)
+  const endpoint = `${API_BASE}/api/contact`;
+
+  console.log("contact endpoint:", endpoint);
+  console.log("contact payload:", {
+    ...payload,
+    email: payload.email ? "[入力あり]" : "[未入力]"
   });
 
-  const data = await res.json().catch(() => ({}));
+  let res;
+
+  try {
+    res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-access-code": accessCode
+      },
+      body: JSON.stringify(payload)
+    });
+  } catch (networkError) {
+    console.error("contact network error:", networkError);
+    throw new Error(
+      "サーバーに接続できませんでした。通信状態を確認してください。"
+    );
+  }
+
+  const responseText = await res.text();
+
+  let data = {};
+
+  if (responseText) {
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error("contact response parse failed:", responseText);
+      throw new Error(
+        `サーバーから正しくない応答が返されました。（HTTP ${res.status}）`
+      );
+    }
+  }
 
   if (!res.ok) {
-    throw new Error(data?.error || "お問い合わせの送信に失敗しました。");
+    console.error("apiContact failed:", res.status, data);
+
+    throw new Error(
+      data?.error ||
+        `お問い合わせの送信に失敗しました。（HTTP ${res.status}）`
+    );
   }
 
   return data;
 }
+// //***変更箇所**** ここまで
 
 function setContactBusy(isBusy) {
   if (contactSubmitBtn) {
@@ -791,39 +828,70 @@ function setContactBusy(isBusy) {
   if (contactMessage) contactMessage.disabled = isBusy;
 }
 
+f// //***変更箇所**** ここから：画面に確実に状態を表示
 function setContactStatus(message, status = "") {
-  if (!contactStatus) return;
+  if (!contactStatus) {
+    console.error("contactStatusが見つかりません:", message);
+    return;
+  }
 
   contactStatus.textContent = message;
-  contactStatus.classList.remove("success", "error");
+  contactStatus.classList.remove("success", "error", "sending");
 
   if (status) {
     contactStatus.classList.add(status);
+  } else if (message) {
+    contactStatus.classList.add("sending");
   }
 }
+// //***変更箇所**** ここまで
 
 contactForm?.addEventListener("submit", async (e) => {
-  e.preventDefault();
+  // //***変更箇所**** ここから：問い合わせ送信処理を関数化して確実に登録
+async function submitContactForm(e) {
+  if (e) {
+    e.preventDefault();
+  }
 
-  const type = contactType?.value.trim() || "";
-  const email = contactEmail?.value.trim() || "";
-  const message = contactMessage?.value.trim() || "";
+  console.log("contact submit started");
+
+  setContactStatus("送信内容を確認しています…");
+
+  const type = contactType?.value?.trim() || "";
+  const email = contactEmail?.value?.trim() || "";
+  const message = contactMessage?.value?.trim() || "";
 
   if (!type) {
     setContactStatus("お問い合わせ種別を選択してください。", "error");
+    contactType?.focus();
     return;
   }
 
   if (!message || message.length < 5) {
-    setContactStatus("お問い合わせ内容を5文字以上で入力してください。", "error");
+    setContactStatus(
+      "お問い合わせ内容を5文字以上で入力してください。",
+      "error"
+    );
+    contactMessage?.focus();
+    return;
+  }
+
+  if (message.length > 3000) {
+    setContactStatus(
+      "お問い合わせ内容は3000文字以内で入力してください。",
+      "error"
+    );
+    contactMessage?.focus();
     return;
   }
 
   try {
     setContactBusy(true);
-    setContactStatus("");
+    setContactStatus("送信しています…");
 
-    await apiContact({
+    console.log("calling /api/contact");
+
+    const result = await apiContact({
       type,
       email,
       message,
@@ -831,19 +899,50 @@ contactForm?.addEventListener("submit", async (e) => {
       userAgent: navigator.userAgent
     });
 
-    setContactStatus("送信しました。ありがとうございます。", "success");
+    console.log("contact send success:", result);
 
-    contactType.value = "";
-    contactEmail.value = "";
-    contactMessage.value = "";
-  } catch (e) {
-    console.error(e);
-    setContactStatus(e.message || "送信に失敗しました。時間をおいてもう一度お試しください。", "error");
+    setContactStatus(
+      "送信しました。お問い合わせありがとうございます。",
+      "success"
+    );
+
+    if (contactType) contactType.value = "";
+    if (contactEmail) contactEmail.value = "";
+    if (contactMessage) contactMessage.value = "";
+  } catch (error) {
+    console.error("contact submit failed:", error);
+
+    setContactStatus(
+      error?.message ||
+        "送信に失敗しました。時間をおいてもう一度お試しください。",
+      "error"
+    );
   } finally {
     setContactBusy(false);
   }
-});
+}
+
+function initializeContactForm() {
+  if (!contactForm) {
+    console.error("contactFormが見つかりません。index.htmlのidを確認してください。");
+    return;
+  }
+
+  if (!contactSubmitBtn) {
+    console.error(
+      "contactSubmitBtnが見つかりません。index.htmlのidを確認してください。"
+    );
+    return;
+  }
+
+  contactForm.addEventListener("submit", submitContactForm);
+
+  console.log("contact form initialized");
+}
+
+initializeContactForm();
 // //***変更箇所**** ここまで
+});
 
 modeWallBtn?.addEventListener("click", () => {
   setMode("wall5");
