@@ -835,12 +835,21 @@ function setContactStatus(message, status = "") {
   }
 
   contactStatus.textContent = message;
-  contactStatus.classList.remove("success", "error", "sending");
+  contactStatus.classList.remove("success", "error", "sending", "flash");
 
   if (status) {
     contactStatus.classList.add(status);
   } else if (message) {
     contactStatus.classList.add("sending");
+  }
+
+  if (message) {
+    contactStatus.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+    // //***変更箇所**** ここから：メッセージが見落とされないようフラッシュ表示
+    void contactStatus.offsetWidth; // アニメーション再トリガー用
+    contactStatus.classList.add("flash");
+    // //***変更箇所**** ここまで
   }
 }
 
