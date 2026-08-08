@@ -1,4 +1,6 @@
 import { writeLatestMemory } from "../../lib/memoryStore.js";
+import { MAX_SUMMARY_HISTORY_MESSAGES, trimHistory } from "../../lib/limits.js";
+import { getClerkUserId } from "../../lib/clerkAuth.js";
 
 function parseJsonSafely(text) {
   try {
@@ -16,10 +18,9 @@ function parseJsonSafely(text) {
 }
 
 export default async function handler(req, res) {
-  const ACCESS_CODE = process.env.ACCESS_CODE;
-  const clientCode = req.headers["x-access-code"];
+  const userId = await getClerkUserId(req);
 
-  if (!ACCESS_CODE || clientCode !== ACCESS_CODE) {
+  if (!userId) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
@@ -33,6 +34,10 @@ export default async function handler(req, res) {
     if (!Array.isArray(messages)) {
       return res.status(400).json({ error: "messages must be an array" });
     }
+
+    // //***変更箇所**** ここから：コスト対策（履歴件数制限）
+    const trimmedMessages = trimHistory(messages, MAX_SUMMARY_HISTORY_MESSAGES);
+    // //***変更箇所**** ここまで
 
     const isWall5 = mode === "wall5";
 
@@ -89,10 +94,11 @@ JSON形式:
       body: JSON.stringify({
         model: "gpt-4.1-mini",
         temperature: 0.7,
+        max_tokens: 500,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "system", content: MODE_CONTEXT },
-          ...messages
+          ...trimmedMessages
         ]
       })
     });

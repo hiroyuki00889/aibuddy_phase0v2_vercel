@@ -1,10 +1,10 @@
 import { readLatestMemory } from "../../lib/memoryStore.js";
+import { getClerkUserId } from "../../lib/clerkAuth.js";
 
 export default async function handler(req, res) {
-  const ACCESS_CODE = process.env.ACCESS_CODE;
-  const clientCode = req.headers["x-access-code"];
+  const userId = await getClerkUserId(req);
 
-  if (!ACCESS_CODE || clientCode !== ACCESS_CODE) {
+  if (!userId) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 

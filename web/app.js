@@ -38,22 +38,12 @@ const contactSubmitBtn = document.getElementById("contactSubmitBtn");
 const contactStatus = document.getElementById("contactStatus");
 // //***変更箇所**** ここまで
 
-const gate = document.getElementById("gate");
-const passInput = document.getElementById("passInput");
-const passBtn = document.getElementById("passBtn");
-const passError = document.getElementById("passError");
-
-passBtn.addEventListener("click", async () => {
-  const v = passInput.value.trim();
-  if (!v) return;
-  accessCode = v;
-  gate.style.display = "none";
-  await boot();
-});
-
 const API_BASE = "";
 
-let accessCode = "";
+// //***変更箇所**** ここから：Clerkログイン成功後にauth.jsから呼ばれる
+window.onAibuddyAuthReady = boot;
+// //***変更箇所**** ここまで
+
 let messages = [];
 let mode = "free";
 
@@ -158,12 +148,14 @@ function getWallRemainingSeconds() {
 
 //memory取得API
 async function apiGetLatestMemory() {
+  const authHeaders = await window.getClerkAuthHeaders();
+
   // //***変更箇所**** ここから：現在のmodeをqueryで渡す
   const res = await fetch(`${API_BASE}/api/memory/latest?mode=${encodeURIComponent(mode)}`, {
   // //***変更箇所**** ここまでs
     method: "GET",
     headers: {
-      "x-access-code": accessCode
+      ...authHeaders
     }
   });
 
@@ -176,11 +168,13 @@ async function apiGetLatestMemory() {
 }
 
 async function apiChat() {
+  const authHeaders = await window.getClerkAuthHeaders();
+
   const res = await fetch(`${API_BASE}/api/chat`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-access-code": accessCode
+      ...authHeaders
     },
     body: JSON.stringify({
       messages,
@@ -210,11 +204,13 @@ async function apiChat() {
 
 // //***変更箇所**** ここから：まとめ専用API
 async function apiSummarize() {
+  const authHeaders = await window.getClerkAuthHeaders();
+
   const res = await fetch(`${API_BASE}/api/summarize`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-access-code": accessCode
+      ...authHeaders
     },
     body: JSON.stringify({
       messages,
@@ -277,11 +273,13 @@ function pushAssistantMessage(reply, answerLimitSeconds = null) {
 
 //終了APIを分離
 async function apiEndSession() {
+  const authHeaders = await window.getClerkAuthHeaders();
+
   const res = await fetch(`${API_BASE}/api/session/end`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-access-code": accessCode
+      ...authHeaders
     },
     body: JSON.stringify({
       messages,
@@ -618,16 +616,6 @@ inputEl.addEventListener("compositionend", () => {
   isComposing = false;
 });
 
-// //***変更箇所**** ここから：合言葉入力でEnterキーでも入室
-passInput.addEventListener("keydown", (e) => {
-  if (e.key !== "Enter") return;
-  if (e.isComposing || isComposing || e.keyCode === 229) return;
-
-  e.preventDefault();
-  passBtn.click();
-});
-// //***変更箇所**** ここまで
-
 sendBtn.addEventListener("click", send);
 
 // 壁打ち用まとめるボタン
@@ -779,8 +767,7 @@ async function apiContact(payload) {
     res = await fetch(endpoint, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "x-access-code": accessCode
+        "Content-Type": "application/json"
       },
       body: JSON.stringify(payload)
     });

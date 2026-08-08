@@ -1,6 +1,13 @@
+import {
+  MAX_USER_INPUT_CHARS,
+  MAX_CHAT_HISTORY_MESSAGES,
+  findOversizedUserMessage,
+  trimHistory
+} from "../lib/limits.js";
+import { getClerkUserId } from "../lib/clerkAuth.js";
+
 export default async function handler(req, res) {
-  const ACCESS_CODE = process.env.ACCESS_CODE;
-  const clientCode = req.headers["x-access-code"];
+  const userId = await getClerkUserId(req);
 
   // //***変更箇所**** ここから：JSONパースの安全化を強化
   function parseJsonSafely(text) {
@@ -33,7 +40,7 @@ export default async function handler(req, res) {
   }
   // //***変更箇所**** ここまで
 
-  if (!ACCESS_CODE || clientCode !== ACCESS_CODE) {
+  if (!userId) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
@@ -48,6 +55,16 @@ export default async function handler(req, res) {
     if (!Array.isArray(messages)) {
       return res.status(400).json({ error: "messages must be an array" });
     }
+
+    // //***変更箇所**** ここから：コスト対策（文字数上限・履歴件数制限）
+    if (findOversizedUserMessage(messages)) {
+      return res.status(400).json({
+        error: `1回の入力は${MAX_USER_INPUT_CHARS}文字までです`
+      });
+    }
+
+    const trimmedMessages = trimHistory(messages, MAX_CHAT_HISTORY_MESSAGES);
+    // //***変更箇所**** ここまで
 
     const BASE_PROMPT = `
 あなたは「相棒AI」です。
@@ -205,7 +222,8 @@ answerLimitSeconds ルール：
       body: JSON.stringify({
         model: "gpt-4o-mini",
         temperature: 0.8,
-        messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages]
+        max_tokens: 1000,
+        messages: [{ role: "system", content: SYSTEM_PROMPT }, ...trimmedMessages]
       })
     });
 
