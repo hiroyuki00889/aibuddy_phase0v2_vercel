@@ -932,11 +932,6 @@ modeWallBtn?.addEventListener("click", () => {
   reset();
 });
 
-modeWallBtn?.addEventListener("click", () => {
-  setMode("wall5");
-  reset();
-});
-
 modeFreeBtn?.addEventListener("click", () => {
   setMode("free");
   reset();
