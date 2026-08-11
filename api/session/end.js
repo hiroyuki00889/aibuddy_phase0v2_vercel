@@ -18,10 +18,10 @@ function parseJsonSafely(text) {
 }
 
 export default async function handler(req, res) {
-  const userId = await getClerkUserId(req);
+  const { userId, reason } = await getClerkUserId(req);
 
   if (!userId) {
-    return res.status(401).json({ error: "Unauthorized" });
+    return res.status(401).json({ error: "Unauthorized", reason });
   }
 
   if (req.method !== "POST") {
