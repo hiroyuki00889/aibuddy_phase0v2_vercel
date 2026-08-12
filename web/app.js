@@ -192,9 +192,11 @@ async function apiChat() {
 
   if (!res.ok) {
     const text = await res.text();
-    // //***変更箇所**** ここから：APIエラー内容を確認しやすくする
+    // //***変更箇所**** ここから：APIエラー内容を確認しやすくする（ステータスも保持）
     console.error("apiChat failed:", res.status, text);
-    throw new Error(`apiChat failed: ${res.status} ${text}`);
+    const err = new Error(`apiChat failed: ${res.status} ${text}`);
+    err.status = res.status;
+    throw err;
     // //***変更箇所**** ここまで
   }
 
@@ -531,12 +533,13 @@ async function send() {
     // //***変更箇所**** ここまで
 
   } catch (e) {
-    // //***変更箇所**** ここから：リリース向けの表示に戻す
-    addBubble(
-      "ごめんね、今はうまく話せないみたい。少しだけ時間をおいて、もう一度試してみて。",
-      "ai"
-    );
-    // //***変更箇所**** ここまで 
+    // //***変更箇所**** ここから：1日の利用上限時は専用メッセージを表示
+    const message =
+      e?.status === 429
+        ? "今日はたくさんお話できたね。また明日、続きを聞かせてね。"
+        : "ごめんね、今はうまく話せないみたい。少しだけ時間をおいて、もう一度試してみて。";
+    addBubble(message, "ai");
+    // //***変更箇所**** ここまで
   } finally {
     setBusy(false);
     inputEl.focus();

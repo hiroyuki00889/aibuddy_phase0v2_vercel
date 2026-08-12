@@ -5,6 +5,7 @@ import {
   trimHistory
 } from "../lib/limits.js";
 import { getClerkUserId } from "../lib/clerkAuth.js";
+import { checkAndIncrementDailyChatLimit, DAILY_CHAT_LIMIT } from "../lib/rateLimit.js";
 
 export default async function handler(req, res) {
   const userId = await getClerkUserId(req);
@@ -47,6 +48,15 @@ export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
+
+  // //***変更箇所**** ここから：ユーザー別・1日あたりの利用回数制限
+  const rateLimit = await checkAndIncrementDailyChatLimit(userId);
+  if (!rateLimit.allowed) {
+    return res.status(429).json({
+      error: `1日のメッセージ上限（${DAILY_CHAT_LIMIT}回）に達しました。日本時間の0時にリセットされます。`
+    });
+  }
+  // //***変更箇所**** ここまで
 
   try {
     //latestMemory を受け取る
