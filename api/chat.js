@@ -5,7 +5,11 @@ import {
   trimHistory
 } from "../lib/limits.js";
 import { getClerkUserId } from "../lib/clerkAuth.js";
-import { checkAndIncrementDailyChatLimit, DAILY_CHAT_LIMIT } from "../lib/rateLimit.js";
+import {
+  checkAndIncrementDailyChatLimit,
+  checkAndIncrementWall5Overage,
+  DAILY_CHAT_LIMIT
+} from "../lib/rateLimit.js";
 
 export default async function handler(req, res) {
   const userId = await getClerkUserId(req);
@@ -50,11 +54,24 @@ export default async function handler(req, res) {
   }
 
   // //***変更箇所**** ここから：ユーザー別・1日あたりの利用回数制限
+  // 整理&GO！（壁打ち）は通常上限に達していても、「その時すでに進行中だったチャット」に限り
+  // まとまるまで続けられるよう追加分（DAILY_WALL5_OVERAGE_LIMIT）の範囲で継続を許可する。
+  // 上限到達後に新しく始めたチャット（まだAI返答がない＝最初の1通目）には適用しない。
   const rateLimit = await checkAndIncrementDailyChatLimit(userId);
   if (!rateLimit.allowed) {
-    return res.status(429).json({
-      error: `1日のメッセージ上限（${DAILY_CHAT_LIMIT}回）に達しました。日本時間の0時にリセットされます。`
-    });
+    const isWall5 = req.body?.mode === "wall5";
+    const isContinuingSession =
+      isWall5 &&
+      Array.isArray(req.body?.messages) &&
+      req.body.messages.some((m) => m?.role === "assistant");
+
+    const overage = isContinuingSession ? await checkAndIncrementWall5Overage(userId) : null;
+
+    if (!overage?.allowed) {
+      return res.status(429).json({
+        error: `1日のメッセージ上限（${DAILY_CHAT_LIMIT}回）に達しました。日本時間の0時にリセットされます。`
+      });
+    }
   }
   // //***変更箇所**** ここまで
 
