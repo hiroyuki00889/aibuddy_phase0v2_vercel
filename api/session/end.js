@@ -123,8 +123,8 @@ JSON形式:
       created_at: new Date().toISOString()
     };
 
-    // //***変更箇所**** ここから：現在モードのキーに保存
-    await writeLatestMemory(latestMemory, latestMemory.mode);
+    // //***変更箇所**** ここから：ユーザー別・現在モードのキーに保存
+    await writeLatestMemory(userId, latestMemory, latestMemory.mode);
     // //***変更箇所**** ここまで
 
     return res.status(200).json({
