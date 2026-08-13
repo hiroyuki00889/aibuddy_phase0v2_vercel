@@ -45,7 +45,7 @@ window.onAibuddyAuthReady = boot;
 // //***変更箇所**** ここまで
 
 let messages = [];
-let mode = "free";
+let mode = "wall5";
 
 //Phase2の軽い記憶を保持
 let latestMemory = null;
@@ -940,4 +940,4 @@ modeFreeBtn?.addEventListener("click", () => {
   reset();
 });
 
-setMode("free");
+setMode("wall5");
