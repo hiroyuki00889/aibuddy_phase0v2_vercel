@@ -55,7 +55,7 @@ let wall = {
   isActive: false,
   endAt: 0,
   timerId: null,
-  durationSeconds: 5 * 60,
+  durationSeconds: 10 * 60,
 
   // //***変更箇所**** ここから：回答用カウントダウン
   answerTimerId: null,
@@ -389,7 +389,7 @@ function setMode(nextMode) {
     return;
   }
 
-  const minutes = Math.max(1, Math.min(30, Number(wallMinutesInput?.value || 5)));
+  const minutes = Math.max(1, Math.min(30, Number(wallMinutesInput?.value || 10)));
   wall.durationSeconds = minutes * 60;
   if (wallMinutesValue) wallMinutesValue.textContent = `${minutes}分`;
 
@@ -596,7 +596,7 @@ async function reset() {
     // //***変更箇所**** ここから：回答タイマー停止を追加
   if (mode === "wall5") {
     stopWallTimer();
-    const minutes = Math.max(1, Number(wallMinutesInput?.value || 5));
+    const minutes = Math.max(1, Number(wallMinutesInput?.value || 10));
     wall.durationSeconds = minutes * 60;
     timerText.textContent = formatMMSS(wall.durationSeconds);
     progressBar.style.width = "0%";
@@ -670,7 +670,7 @@ summarizeBtn?.addEventListener("click", async () => {
 // 壁打ち時間変更
 // //***変更箇所**** ここから：number入力からスライダー入力に変更
 wallMinutesInput?.addEventListener("input", () => {
-  const minutes = Math.max(1, Math.min(30, Number(wallMinutesInput.value) || 5));
+  const minutes = Math.max(1, Math.min(30, Number(wallMinutesInput.value) || 10));
   wallMinutesInput.value = String(minutes);
   wall.durationSeconds = minutes * 60;
 
