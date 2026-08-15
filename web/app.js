@@ -10,6 +10,9 @@ const wallMinutesInput = document.getElementById("wallMinutesInput");
 // 整理&GO！の残り時間エリア
 const wallTimerBox = document.getElementById("wallTimerBox");
 const wallMinutesValue = document.getElementById("wallMinutesValue");
+// タイマー利用有無の切り替え（既定はOFF＝タイマーなし）
+const wallTimerToggleBox = document.getElementById("wallTimerToggleBox");
+const wallTimerToggle = document.getElementById("wallTimerToggle");
 
 // Phase1: モード切替（5分壁打ち / フリートーク）
 const modeWallBtn = document.getElementById("modeWallBtn");
@@ -50,12 +53,15 @@ let mode = "wall5";
 //Phase2の軽い記憶を保持
 let latestMemory = null;
 
-// 5分壁打ちタイマー
+// 壁打ちタイマー（既定OFF：焦らず話したい人向け。ONにすると時間で区切って集中できる）
+const WALL_TIMER_ENABLED_KEY = "aibuddy:wallTimerEnabled";
+
 let wall = {
   isActive: false,
   endAt: 0,
   timerId: null,
   durationSeconds: 10 * 60,
+  timerEnabled: localStorage.getItem(WALL_TIMER_ENABLED_KEY) === "true",
 
   // //***変更箇所**** ここから：回答用カウントダウン
   answerTimerId: null,
@@ -352,10 +358,15 @@ async function boot() {
 
   if (mode === "wall5") {
     addBubble(
-      // //***変更箇所**** ここから：機能名を変更
-      `【整理&GO！】考えを整理して、次にやることを1つ決めるよ。
+      // //***変更箇所**** ここから：機能名を変更、タイマーON/OFFで案内文を分岐
+      wall.timerEnabled
+        ? `【整理&GO！】考えを整理して、次にやることを1つ決めるよ。
 時間は ${Math.floor(wall.durationSeconds / 60)} 分にしてある。
 必要なら上で変更してから始めてね。
+「何を整理したいか」を一文で教えて。`
+        : `【整理&GO！】考えを整理して、次にやることを1つ決めるよ。
+今はタイマーなしだから、焦らず自分のペースで話してね。
+短時間で区切って集中したいときは、上の「タイマーを使う」をONにしてね。
 「何を整理したいか」を一文で教えて。`,
       // //***変更箇所**** ここまで
       "ai"
@@ -378,9 +389,9 @@ function setMode(nextMode) {
   // //***変更箇所**** ここから：時間UIは整理&GO！だけ表示
   const isWallMode = mode === "wall5";
 
-  wallDurationBox?.classList.toggle("hidden", !isWallMode);
-  wallTimerBox?.classList.toggle("hidden", !isWallMode);
+  wallTimerToggleBox?.classList.toggle("hidden", !isWallMode);
   summarizeBtn?.classList.toggle("hidden", !isWallMode);
+  updateWallTimerVisibility();
 
   if (!isWallMode) {
     stopWallTimer();
@@ -398,8 +409,16 @@ function setMode(nextMode) {
   // //***変更箇所**** ここまで
 }
 
+// タイマーON/OFFと現在のモードに応じて設定時間・カウントダウンUIの表示を切り替える
+function updateWallTimerVisibility() {
+  const showTimerUI = mode === "wall5" && wall.timerEnabled;
+  wallDurationBox?.classList.toggle("hidden", !showTimerUI);
+  wallTimerBox?.classList.toggle("hidden", !showTimerUI);
+}
+
 function startWallTimerIfNeeded() {
   if (mode !== "wall5") return;
+  if (!wall.timerEnabled) return;
   if (wall.isActive) return;
   wall.isActive = true;
   wall.endAt = Date.now() + wall.durationSeconds * 1000;
@@ -520,14 +539,14 @@ async function send() {
     const answerLimitSeconds = data?.answerLimitSeconds ?? null;
 
     const bubbleResult = addBubble(reply, "ai", {
-    answerLimitSeconds: mode === "wall5" ? answerLimitSeconds : null
+    answerLimitSeconds: mode === "wall5" && wall.timerEnabled ? answerLimitSeconds : null
     });
 
     pushAssistantMessage(reply, answerLimitSeconds);
     // //***変更箇所**** ここまで
 
     // //***変更箇所**** ここから：壁打ち回答タイマーを開始
-    if (mode === "wall5" && answerLimitSeconds) {
+    if (mode === "wall5" && wall.timerEnabled && answerLimitSeconds) {
       startAnswerTimer(answerLimitSeconds, bubbleResult.timerEl);
     }
     // //***変更箇所**** ここまで
@@ -665,6 +684,29 @@ summarizeBtn?.addEventListener("click", async () => {
     inputEl.focus();
   }
   // //***変更箇所**** ここまで
+});
+
+// タイマー利用有無の切り替え
+if (wallTimerToggle) {
+  wallTimerToggle.checked = wall.timerEnabled;
+}
+
+wallTimerToggle?.addEventListener("change", () => {
+  wall.timerEnabled = wallTimerToggle.checked;
+  localStorage.setItem(WALL_TIMER_ENABLED_KEY, String(wall.timerEnabled));
+
+  if (!wall.timerEnabled) {
+    stopWallTimer();
+    timerText.textContent = "--:--";
+    progressBar.style.width = "0%";
+  } else if (mode === "wall5") {
+    const minutes = Math.max(1, Math.min(30, Number(wallMinutesInput?.value || 10)));
+    wall.durationSeconds = minutes * 60;
+    timerText.textContent = formatMMSS(wall.durationSeconds);
+    progressBar.style.width = "0%";
+  }
+
+  updateWallTimerVisibility();
 });
 
 // 壁打ち時間変更

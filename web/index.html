@@ -46,6 +46,14 @@
   <div class="headerBottom">
     <!-- //左側の時間UIをまとめる -->
     <div class="wallControls">
+      <div id="wallTimerToggleBox" class="wallTimerToggleBox hidden">
+        <label class="wallTimerToggleLabel">
+          <input type="checkbox" id="wallTimerToggle" />
+          タイマーを使う
+        </label>
+        <span class="wallTimerHint">短時間で区切ると考えが整理しやすくなります。オフなら焦らずゆっくり話せます。</span>
+      </div>
+
       <div id="wallDurationBox" class="wallDurationBox hidden">
         <label for="wallMinutesInput">設定時間</label>
         <input id="wallMinutesInput" type="range" min="1" max="30" value="10" />

@@ -345,6 +345,26 @@ body.theme-wall .bubble { display: none; } /* 念のため（壁打ちでは bub
   min-height: 64px;
 }
 
+.wallTimerToggleBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.wallTimerToggleLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.wallTimerHint {
+  font-size: 0.82rem;
+  color: var(--muted, #8a8a8a);
+}
+
 .wallDurationBox {
   display: flex;
   align-items: center;
