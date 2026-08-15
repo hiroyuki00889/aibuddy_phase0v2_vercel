@@ -338,6 +338,19 @@ body.theme-wall .bubble { display: none; } /* 念のため（壁打ちでは bub
   border-color: #1677ff;
 }
 
+.modeOption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.modeCaption {
+  font-size: 0.78rem;
+  color: var(--muted, #8a8a8a);
+  text-align: center;
+}
+
 .headerBottom {
   display: flex;
   align-items: center;
