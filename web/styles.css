@@ -508,6 +508,7 @@ body.theme-dusk .header {
   flex-shrink: 0;
 }
 
+.aboutBtn,
 .myPageBtn,
 .sessionEndBtn {
   min-width: 140px;
@@ -636,6 +637,7 @@ body.theme-dusk .header {
     flex-wrap: wrap;
   }
 
+  .aboutBtn,
   .myPageBtn,
   .sessionEndBtn {
     min-width: 132px;
@@ -647,7 +649,7 @@ body.theme-dusk .header {
 
   .myPageMenu {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .myPageMenuItem {
@@ -702,9 +704,10 @@ body.theme-dusk .header {
 
   .headerActions {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
   }
 
+  .aboutBtn,
   .myPageBtn,
   .sessionEndBtn {
     width: 100%;
@@ -768,6 +771,7 @@ body.theme-dusk .header {
   user-select: none;
 }
 
+.aboutBtn,
 .myPageBtn,
 .sessionEndBtn {
   user-select: none;
@@ -794,7 +798,7 @@ body.theme-dusk .header {
 @media (max-width: 560px) {
   .headerActions {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
   }
 }
 /* //***変更箇所**** ここまで */

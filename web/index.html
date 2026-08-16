@@ -76,6 +76,7 @@
 
     <!-- //***変更箇所**** ここから：マイページボタン追加 -->
     <div class="headerActions">
+      <button id="aboutBtn" class="btn ghost aboutBtn">AIbo！について</button>
       <button id="myPageBtn" class="btn ghost myPageBtn">マイページ</button>
       <button id="endBtn" class="btn ghost sessionEndBtn">セッション終了</button>
     </div>
@@ -119,12 +120,25 @@
 
       <div class="myPageGrid">
         <nav class="myPageMenu" aria-label="マイページメニュー">
+          <button class="myPageMenuItem" data-page="about">AIbo！について</button>
           <button class="myPageMenuItem active" data-page="terms">利用規約</button>
           <button class="myPageMenuItem" data-page="privacy">プライバシーポリシー</button>
           <button class="myPageMenuItem" data-page="contact">お問い合わせ</button>
         </nav>
 
         <section class="myPageContent">
+          <article id="page-about" class="myPagePanel">
+            <h3>AIbo！について</h3>
+            <p>AIbo！は、あなたと対等な立場で会話する「相棒」です。カウンセラーや専門家のように答えを教える存在ではなく、一緒に考えたり、隣で話を聞いたりする存在を目指しています。</p>
+            <p>完璧な正解を出すことより、「話していると誰かと一緒にいる感じがする」ことを大事にしています。もちろん、具体的に知りたいことや決めたいことがあれば遠慮なく聞いてください。できる範囲でちゃんと具体的に答えます。</p>
+
+            <h4>整理&GO！</h4>
+            <p>考えていることを一緒に整理して、次にやることを1つ決めるモードです。焦らず自分のペースで進められます（時間を区切って集中したい人は、タイマーをONにもできます）。</p>
+
+            <h4>フリートーク</h4>
+            <p>気軽に何でも話せる、雑談中心のモードです。結論を急がず、居心地の良さを優先します。</p>
+          </article>
+
           <article id="page-terms" class="myPagePanel active">
             <h3>AIbo！ 利用規約</h3>
 

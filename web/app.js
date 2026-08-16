@@ -26,6 +26,7 @@ const resetBtn = document.getElementById("resetBtn");
 const closeBtn = document.getElementById("closeBtn");
 
 // マイページ関連DOM
+const aboutBtn = document.getElementById("aboutBtn");
 const myPageBtn = document.getElementById("myPageBtn");
 const myPageModal = document.getElementById("myPageModal");
 const myPageCloseBtn = document.getElementById("myPageCloseBtn");
@@ -333,8 +334,19 @@ function buildMemoryIntro(memory) {
   // //***変更箇所**** ここまで
 }
 
+// 初回利用時だけ「AIbo！について」を自動表示する
+const INTRO_SEEN_KEY = "aibuddy:seenIntro";
+
+function maybeShowIntro() {
+  if (localStorage.getItem(INTRO_SEEN_KEY)) return;
+  openMyPage();
+  switchMyPage("about");
+  localStorage.setItem(INTRO_SEEN_KEY, "true");
+}
+
 //bootをasync化してmemory取得
 async function boot() {
+  maybeShowIntro();
   applyThemeByMode();
 
   // //***変更箇所**** ここから：モード別入力文言を反映
@@ -770,6 +782,11 @@ function switchMyPage(pageName) {
     panel.classList.toggle("active", panel.id === `page-${pageName}`);
   });
 }
+
+aboutBtn?.addEventListener("click", () => {
+  openMyPage();
+  switchMyPage("about");
+});
 
 myPageBtn?.addEventListener("click", openMyPage);
 myPageCloseBtn?.addEventListener("click", closeMyPage);
