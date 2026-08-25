@@ -610,6 +610,60 @@ body.theme-dusk .header {
   margin: 0 0 10px;
 }
 
+/* //***変更箇所**** ここから：話し方タイプ（ペルソナ）選択カード */
+.personaGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 10px 0 16px;
+}
+
+.personaCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  text-align: left;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  background: rgba(255, 255, 255, 0.55);
+  color: #1f2328;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.personaCard:hover {
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.personaCard.active {
+  border-color: #1677ff;
+  background: rgba(22, 119, 255, 0.10);
+}
+
+.personaIcon {
+  font-size: 1.4rem;
+}
+
+.personaName {
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.personaDesc {
+  font-size: 0.82rem;
+  opacity: 0.75;
+  line-height: 1.5;
+}
+
+@media (max-width: 560px) {
+  .personaGrid {
+    grid-template-columns: 1fr;
+  }
+}
+/* //***変更箇所**** ここまで */
+
 .contactPlaceholder {
   margin-top: 16px;
   padding: 14px;

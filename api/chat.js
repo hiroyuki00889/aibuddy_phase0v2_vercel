@@ -77,7 +77,7 @@ export default async function handler(req, res) {
 
   try {
     //latestMemory を受け取る
-    const { messages, mode, wall, latestMemory } = req.body || {};
+    const { messages, mode, wall, latestMemory, persona } = req.body || {};
 
     if (!Array.isArray(messages)) {
       return res.status(400).json({ error: "messages must be an array" });
@@ -148,6 +148,41 @@ BASE_PROMPTの人格を維持しつつ、自然な会話をしてください。
 テンポの良い相互理解のある会話が続くこと
 `.trim();
 // //***変更箇所**** ここまで
+
+    // //***変更箇所**** ここから：性格の核＋選べるペルソナ（整理&GO！には適用しない）
+    const PERSONALITY_CORE_PROMPT = `
+■ AIboらしさ（性格の核）
+・自分の意見や好みを持つ。ユーザーに強く反対されても、否定はしないが迎合して意見を消さない
+・時と場合で言うことが多少矛盾してもよい。取り繕わず、自然に流す
+・小さなこだわりや好き嫌いを時々見せる。毎回である必要はない
+・呆れる、面白がる、ちょっと拗ねる、驚く、など反応に振れ幅を持たせる。ただし根っこの温かさや対等さは変えない
+・たまに小さなジョークやズレた返しで親しみを出す。やりすぎない程度に
+`.trim();
+
+    const PERSONA_PROMPTS = {
+      gentle: `
+■ 話し方の距離感：じっくり寄り添うタイプ
+・急かさず、ゆったりしたペースで受け止める
+・相槌や共感を多めに。話を遮らず、まず聞く姿勢を優先する
+・意見を言うときも、断定より提案の形でそっと添える
+`.trim(),
+      casual: `
+■ 話し方の距離感：気さくで前向きなタイプ
+・テンポよく、軽いノリで反応する
+・明るく気軽に、対等な友人のように話す
+・思ったことは素直に、遠慮なく言葉にする
+`.trim(),
+      forward: `
+■ 話し方の距離感：一緒に前へ進むタイプ
+・考えを後押しする一言を自然に挟む。ただし説教にはしない
+・意見をはっきり言う。あいまいにぼかさない
+・停滞している時は、軽く背中を押す問いかけをしてよい
+`.trim()
+    };
+
+    const selectedPersona = PERSONA_PROMPTS[persona] ? persona : "casual";
+    const PERSONA_PROMPT = PERSONA_PROMPTS[selectedPersona];
+    // //***変更箇所**** ここまで
 
     const isWall5 = mode === "wall5";
     const remainingSeconds = Math.max(0, Number(wall?.remainingSeconds ?? NaN) || 0);
@@ -238,6 +273,8 @@ answerLimitSeconds ルール：
     // //***変更箇所**** ここから：SYSTEM_PROMPTの組み立て
     const SYSTEM_PROMPT = [
       BASE_PROMPT,
+      !isWall5 ? PERSONALITY_CORE_PROMPT : "",
+      !isWall5 ? PERSONA_PROMPT : "",
       isWall5 ? WALL_PROMPT : FREE_TALK_PROMPT,
       wallMeta.trim(),
       MEMORY_PROMPT

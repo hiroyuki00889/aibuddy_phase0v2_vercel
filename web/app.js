@@ -32,6 +32,7 @@ const myPageModal = document.getElementById("myPageModal");
 const myPageCloseBtn = document.getElementById("myPageCloseBtn");
 const myPageMenuItems = document.querySelectorAll(".myPageMenuItem");
 const myPagePanels = document.querySelectorAll(".myPagePanel");
+const personaCards = document.querySelectorAll(".personaCard");
 
 // //***変更箇所**** ここから：お問い合わせフォーム関連DOM
 const contactForm = document.getElementById("contactForm");
@@ -56,6 +57,10 @@ let latestMemory = null;
 
 // 壁打ちタイマー（既定OFF：焦らず話したい人向け。ONにすると時間で区切って集中できる）
 const WALL_TIMER_ENABLED_KEY = "aibuddy:wallTimerEnabled";
+
+// フリートークでのAIboの話し方タイプ（既定は「気さくで前向きなタイプ」）
+const PERSONA_KEY = "aibuddy:persona";
+let persona = localStorage.getItem(PERSONA_KEY) || "casual";
 
 let wall = {
   isActive: false,
@@ -186,14 +191,15 @@ async function apiChat() {
     body: JSON.stringify({
       messages,
       mode,
-      wall: mode === "wall5" 
+      wall: mode === "wall5"
         ? {
             remainingSeconds: getWallRemainingSeconds(),
             durationSeconds: wall.durationSeconds
           }
         : undefined,
       //latestMemoryを会話APIへ渡す
-      latestMemory
+      latestMemory,
+      persona
     })
   });
 
@@ -802,6 +808,25 @@ myPageMenuItems.forEach((item) => {
     switchMyPage(item.dataset.page);
   });
 });
+// //***変更箇所**** ここまで
+
+// //***変更箇所**** ここから：話し方タイプ（ペルソナ）選択
+function renderPersonaSelection() {
+  personaCards.forEach((card) => {
+    card.classList.toggle("active", card.dataset.persona === persona);
+  });
+}
+
+personaCards.forEach((card) => {
+  card.addEventListener("click", () => {
+    persona = card.dataset.persona;
+    localStorage.setItem(PERSONA_KEY, persona);
+    renderPersonaSelection();
+  });
+});
+
+renderPersonaSelection();
+// //***変更箇所**** ここまで
 
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
