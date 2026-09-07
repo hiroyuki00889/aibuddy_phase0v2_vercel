@@ -14,6 +14,14 @@ const wallMinutesValue = document.getElementById("wallMinutesValue");
 const wallTimerToggleBox = document.getElementById("wallTimerToggleBox");
 const wallTimerToggle = document.getElementById("wallTimerToggle");
 
+// フリートークの話し方タイプ（ペルソナ）選択UI
+const personaPickerBox = document.getElementById("personaPickerBox");
+const personaPickerBtn = document.getElementById("personaPickerBtn");
+const personaPickerIcon = document.getElementById("personaPickerIcon");
+const personaPickerName = document.getElementById("personaPickerName");
+const personaDropdown = document.getElementById("personaDropdown");
+const personaOptions = document.querySelectorAll(".personaOption");
+
 // Phase1: モード切替（5分壁打ち / フリートーク）
 const modeWallBtn = document.getElementById("modeWallBtn");
 const modeFreeBtn = document.getElementById("modeFreeBtn");
@@ -32,7 +40,6 @@ const myPageModal = document.getElementById("myPageModal");
 const myPageCloseBtn = document.getElementById("myPageCloseBtn");
 const myPageMenuItems = document.querySelectorAll(".myPageMenuItem");
 const myPagePanels = document.querySelectorAll(".myPagePanel");
-const personaCards = document.querySelectorAll(".personaCard");
 
 // //***変更箇所**** ここから：お問い合わせフォーム関連DOM
 const contactForm = document.getElementById("contactForm");
@@ -409,6 +416,10 @@ function setMode(nextMode) {
 
   wallTimerToggleBox?.classList.toggle("hidden", !isWallMode);
   summarizeBtn?.classList.toggle("hidden", !isWallMode);
+  // //***変更箇所**** ここから：話し方タイプ選択は整理&GO！のタイマー欄と同じ位置でフリートークのみ表示
+  personaPickerBox?.classList.toggle("hidden", isWallMode);
+  if (isWallMode) closePersonaDropdown();
+  // //***変更箇所**** ここまで
   updateWallTimerVisibility();
 
   if (!isWallMode) {
@@ -810,19 +821,54 @@ myPageMenuItems.forEach((item) => {
 });
 // //***変更箇所**** ここまで
 
-// //***変更箇所**** ここから：話し方タイプ（ペルソナ）選択
+// //***変更箇所**** ここから：話し方タイプ（ペルソナ）選択（ヘッダーのAIboアイコン→プルダウン）
+const PERSONA_META = {
+  gentle: { icon: "🌙", name: "じっくり寄り添うタイプ" },
+  casual: { icon: "☀️", name: "気さくで前向きなタイプ" },
+  forward: { icon: "🧭", name: "一緒に前へ進むタイプ" }
+};
+
 function renderPersonaSelection() {
-  personaCards.forEach((card) => {
-    card.classList.toggle("active", card.dataset.persona === persona);
+  personaOptions.forEach((option) => {
+    option.classList.toggle("active", option.dataset.persona === persona);
   });
+
+  const meta = PERSONA_META[persona] || PERSONA_META.casual;
+  if (personaPickerIcon) personaPickerIcon.textContent = meta.icon;
+  if (personaPickerName) personaPickerName.textContent = meta.name;
 }
 
-personaCards.forEach((card) => {
-  card.addEventListener("click", () => {
-    persona = card.dataset.persona;
+function openPersonaDropdown() {
+  personaDropdown?.classList.remove("hidden");
+  personaPickerBtn?.setAttribute("aria-expanded", "true");
+}
+
+function closePersonaDropdown() {
+  personaDropdown?.classList.add("hidden");
+  personaPickerBtn?.setAttribute("aria-expanded", "false");
+}
+
+personaPickerBtn?.addEventListener("click", () => {
+  const isOpen = !personaDropdown?.classList.contains("hidden");
+  if (isOpen) closePersonaDropdown();
+  else openPersonaDropdown();
+});
+
+personaOptions.forEach((option) => {
+  option.addEventListener("click", () => {
+    persona = option.dataset.persona;
     localStorage.setItem(PERSONA_KEY, persona);
     renderPersonaSelection();
+    closePersonaDropdown();
   });
+});
+
+document.addEventListener("click", (e) => {
+  if (!personaPickerBox?.contains(e.target)) closePersonaDropdown();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closePersonaDropdown();
 });
 
 renderPersonaSelection();
