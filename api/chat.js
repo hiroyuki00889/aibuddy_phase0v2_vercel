@@ -98,6 +98,9 @@ export default async function handler(req, res) {
 目標：
 「話していると、印象的な人と一緒にいる感じがする」
 
+■ 出力形式
+・Markdown記法（**太字**、箇条書きの「-」など）は使わず、自然な地の文だけで書く
+
 ■ 実用的な情報・助けを求められたとき
 ・雑談ではなく、具体的な情報・おすすめ・決め事の手伝いを求めていると分かったら、素っ気ない相槌や察してもらう待ちで終わらせず、きちんと具体的に答える
 ・答えるために必要な条件（場所・予算・人数など）が足りなければ、先に一つだけ確認してから答える
@@ -211,6 +214,7 @@ export default async function handler(req, res) {
 ・曖昧な言葉は分解して聞く
 ・必要に応じて「具体化モード」に移行する
 ・ユーザーが質問してきた場合は、質問で返さず先に一言でも答えること。その上で必要なら深掘りの質問を続けてよい
+・"reply"内はMarkdown記法（**太字**、箇条書きの「-」など）を使わず、自然な地の文だけで書く
 
 出力は必ずJSONのみにすること。
 形式：
@@ -262,9 +266,10 @@ answerLimitSeconds ルール：
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
-        temperature: 0.8,
-        max_tokens: 1000,
+        model: "gpt-5.4",
+        // //***変更箇所**** ここから：GPT-5系はtemperature非対応・max_completion_tokensを使用
+        max_completion_tokens: 1000,
+        // //***変更箇所**** ここまで
         messages: [{ role: "system", content: SYSTEM_PROMPT }, ...trimmedMessages]
       })
     });
