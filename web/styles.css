@@ -181,6 +181,9 @@ textarea:focus {
   display: grid;
   place-items: center;
   padding: 18px;
+  /* //***変更箇所**** ここから：headerのz-index引き上げでモーダルが埋もれないようにする */
+  z-index: 10;
+  /* //***変更箇所**** ここまで */
 }
 .modal.hidden { display: none; }
 
@@ -825,6 +828,10 @@ body.theme-dusk .header {
     min-width: 0;
   }
 
+  .headerActionItem {
+    width: 100%;
+  }
+
   .myPageCard {
     max-height: 86vh;
   }
@@ -887,6 +894,22 @@ body.theme-dusk .header {
 .sessionEndBtn {
   user-select: none;
 }
+
+/* //***変更箇所**** ここから：「今日を閉じる」ボタンに説明キャプションを追加 */
+.headerActionItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.headerActionCaption {
+  font-size: 0.78rem;
+  color: var(--muted, #8a8a8a);
+  text-align: center;
+  white-space: nowrap;
+}
+/* //***変更箇所**** ここまで */
 
 /* 狭い画面では上下に分けて、絶対に重ならないようにする */
 @media (max-width: 820px) {
