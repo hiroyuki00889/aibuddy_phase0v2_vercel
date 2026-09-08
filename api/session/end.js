@@ -1,6 +1,7 @@
 import { writeLatestMemory } from "../../lib/memoryStore.js";
 import { MAX_SUMMARY_HISTORY_MESSAGES, trimHistory } from "../../lib/limits.js";
 import { getClerkUserId } from "../../lib/clerkAuth.js";
+import { getPersonaPrompt } from "../../lib/personas.js";
 
 function parseJsonSafely(text) {
   try {
@@ -29,7 +30,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { messages, mode } = req.body || {};
+    const { messages, mode, persona } = req.body || {};
 
     if (!Array.isArray(messages)) {
       return res.status(400).json({ error: "messages must be an array" });
@@ -85,6 +86,12 @@ JSON形式:
       ? "現在は5分壁打ちモードの終了処理です。"
       : "現在はフリートークモードの終了処理です。";
 
+    // //***変更箇所**** ここから：フリートークのclosing_messageに選択中のペルソナを反映
+    const PERSONA_CONTEXT = !isWall5
+      ? `closing_messageの話し方は、今の会話で使っていた次のペルソナに合わせること（summaryとnext_actionは対象外。通常通り中立に書く）：\n\n${getPersonaPrompt(persona)}`
+      : "";
+    // //***変更箇所**** ここまで
+
     const r = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -98,6 +105,7 @@ JSON形式:
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "system", content: MODE_CONTEXT },
+          ...(PERSONA_CONTEXT ? [{ role: "system", content: PERSONA_CONTEXT }] : []),
           ...trimmedMessages
         ]
       })

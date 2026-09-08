@@ -305,7 +305,8 @@ async function apiEndSession() {
     },
     body: JSON.stringify({
       messages,
-      mode
+      mode,
+      persona
     })
   });
 
