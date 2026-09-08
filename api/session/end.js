@@ -53,7 +53,8 @@ JSON形式:
 {
   "closing_message": "string",
   "summary": "string",
-  "next_action": "string"
+  "next_action": "string",
+  "companion_note": "string"
 }
 
 ルール:
@@ -78,17 +79,24 @@ JSON形式:
   - 抽象的すぎず、重すぎない
   - できなかった時に責められない言い方にする
 
+- companion_note（フリートークの時だけ使う。壁打ちなら空文字""でよい）:
+  - 次にやることの提案ではなく、相棒自身がこの会話について感じたこと・思ったことを1文だけ語る
+  - 「〜だったね」「〜だなって思ったよ」のような、相棒自身の気持ちを表す言い方にする
+  - 説教や評価、アドバイスにはしない
+  - 30〜60文字程度
+
 - 壁打ちモードなら、整理結果と次の一手を重視
-- フリートークなら、中心話題と次に気にしたいことを重視
+- フリートークなら、中心話題と相棒自身の感想を重視
+
 `.trim();
 
     const MODE_CONTEXT = isWall5
       ? "現在は5分壁打ちモードの終了処理です。"
       : "現在はフリートークモードの終了処理です。";
 
-    // //***変更箇所**** ここから：フリートークのclosing_messageに選択中のペルソナを反映
+    // //***変更箇所**** ここから：フリートークのclosing_message・companion_noteに選択中のペルソナを反映
     const PERSONA_CONTEXT = !isWall5
-      ? `closing_messageの話し方は、今の会話で使っていた次のペルソナに合わせること（summaryとnext_actionは対象外。通常通り中立に書く）：\n\n${getPersonaPrompt(persona)}`
+      ? `closing_messageとcompanion_noteの話し方は、今の会話で使っていた次のペルソナに合わせること（summaryとnext_actionは対象外。通常通り中立に書く）：\n\n${getPersonaPrompt(persona)}`
       : "";
     // //***変更箇所**** ここまで
 
@@ -127,6 +135,9 @@ JSON形式:
     const latestMemory = {
       summary: parsed.summary.trim(),
       next_action: parsed.next_action.trim(),
+      // //***変更箇所**** ここから：フリートーク向けの相棒自身の一言（ペルソナ反映）
+      companion_note: typeof parsed.companion_note === "string" ? parsed.companion_note.trim() : "",
+      // //***変更箇所**** ここまで
       mode: mode === "wall5" ? "wall5" : "free",
       created_at: new Date().toISOString()
     };

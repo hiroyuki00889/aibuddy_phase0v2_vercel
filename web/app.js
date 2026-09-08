@@ -335,15 +335,14 @@ function buildMemoryIntro(memory) {
 それとも、今日は別テーマでする？`;
   }
 
+  // //***変更箇所**** ここから：フリートークは「次の一手」ではなく相棒自身の一言（ペルソナ反映）を出す
+  const noteBlock = memory.companion_note ? `${memory.companion_note}\n\n` : "";
+
   return `お帰りなさい！今日はどうだった？
 
 前回は「${memory.summary}」
 
-次の一手は
-「${memory.next_action}」
-だったよ。
-
-続きから話す？
+${noteBlock}続きから話す？
 別の話でも大丈夫。`;
   // //***変更箇所**** ここまで
 }
