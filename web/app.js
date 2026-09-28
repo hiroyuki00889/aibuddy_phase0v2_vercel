@@ -65,7 +65,7 @@ let latestMemory = null;
 // 壁打ちタイマー（既定OFF：焦らず話したい人向け。ONにすると時間で区切って集中できる）
 const WALL_TIMER_ENABLED_KEY = "aibuddy:wallTimerEnabled";
 
-// フリートークでのAIboの話し方タイプ（既定は「気さくで前向きなタイプ」）
+// フリートークでのmybo！の話し方タイプ（既定は「気さくで前向きなタイプ」）
 const PERSONA_KEY = "aibuddy:persona";
 let persona = localStorage.getItem(PERSONA_KEY) || "casual";
 
@@ -347,7 +347,7 @@ ${noteBlock}続きから話す？
   // //***変更箇所**** ここまで
 }
 
-// 初回利用時だけ「AIbo！について」を自動表示する
+// 初回利用時だけ「mybo！について」を自動表示する
 const INTRO_SEEN_KEY = "aibuddy:seenIntro";
 
 function maybeShowIntro() {
@@ -821,7 +821,7 @@ myPageMenuItems.forEach((item) => {
 });
 // //***変更箇所**** ここまで
 
-// //***変更箇所**** ここから：話し方タイプ（ペルソナ）選択（ヘッダーのAIboアイコン→プルダウン）
+// //***変更箇所**** ここから：話し方タイプ（ペルソナ）選択（ヘッダーのmybo！アイコン→プルダウン）
 const PERSONA_META = {
   gentle: { icon: "🌙", name: "じっくり寄り添うタイプ" },
   casual: { icon: "☀️", name: "気さくで前向きなタイプ" },

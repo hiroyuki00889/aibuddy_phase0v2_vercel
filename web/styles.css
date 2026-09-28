@@ -618,7 +618,7 @@ body.theme-dusk .header {
   margin: 0 0 10px;
 }
 
-/* //***変更箇所**** ここから：話し方タイプ（ペルソナ）選択（ヘッダーのAIboアイコン→プルダウン） */
+/* //***変更箇所**** ここから：話し方タイプ（ペルソナ）選択（ヘッダーのmybo！アイコン→プルダウン） */
 .personaPickerBox {
   position: relative;
 }

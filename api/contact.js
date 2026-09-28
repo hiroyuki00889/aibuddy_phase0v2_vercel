@@ -36,7 +36,7 @@ export default async function handler(req, res) {
   }
 
   const contactToEmail = process.env.CONTACT_TO_EMAIL;
-  const contactFromEmail = process.env.CONTACT_FROM_EMAIL || "AIbo！ <onboarding@resend.dev>";
+  const contactFromEmail = process.env.CONTACT_FROM_EMAIL || "mybo！ <onboarding@resend.dev>";
 
   if (!contactToEmail) {
     return res.status(500).json({ error: "CONTACT_TO_EMAIL is not set" });
@@ -75,10 +75,10 @@ export default async function handler(req, res) {
   const ip = getClientIp(req);
   const createdAt = new Date().toISOString();
 
-  const subject = `[AIbo！問い合わせ] ${safeType}`;
+  const subject = `[mybo！問い合わせ] ${safeType}`;
 
   const text = [
-    "AIbo！にお問い合わせが届きました。",
+    "mybo！にお問い合わせが届きました。",
     "",
     `種別: ${safeType}`,
     `メール: ${safeEmail || "未入力"}`,
@@ -92,7 +92,7 @@ export default async function handler(req, res) {
   ].join("\n");
 
   const html = `
-    <h2>AIbo！にお問い合わせが届きました</h2>
+    <h2>mybo！にお問い合わせが届きました</h2>
     <p><strong>種別:</strong> ${escapeHtml(safeType)}</p>
     <p><strong>メール:</strong> ${escapeHtml(safeEmail || "未入力")}</p>
     <p><strong>モード:</strong> ${escapeHtml(safeMode || "不明")}</p>
