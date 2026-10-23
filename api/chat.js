@@ -46,6 +46,23 @@ export default async function handler(req, res) {
   }
   // //***変更箇所**** ここまで
 
+  // //***変更箇所**** ここから：出力上限で途中終了したJSONからreplyだけを取り出す
+  function extractPartialReply(text) {
+    if (!text || typeof text !== "string") return null;
+
+    const match = text.match(/"reply"\s*:\s*"((?:[^"\\]|\\.)*)/);
+    if (!match) return null;
+
+    // 末尾が中途半端なエスケープ（\ や \uXX）で切れていたら落とす
+    const body = match[1].replace(/\\(u[0-9a-fA-F]{0,3})?$/, "");
+    try {
+      return JSON.parse(`"${body}"`);
+    } catch {
+      return body.replace(/\\n/g, "\n").replace(/\\"/g, '"');
+    }
+  }
+  // //***変更箇所**** ここまで
+
   if (!userId) {
     return res.status(401).json({ error: "Unauthorized" });
   }
@@ -166,6 +183,7 @@ export default async function handler(req, res) {
 ■ ユーザーが知りたいことを尋ねてきたとき（壁打ちルールより優先）
 ・整理を止めてでも、実際に知っている内容で具体的に答える。はぐらかしたり、質問で返したりしない
 ・「1ターンは短く」「質問は毎回1つまで」という制約はこの回答には適用しない。分量より、整理に必要な情報が伝わることを優先する
+・ただし要点を絞り、長くても800字程度までにする。それ以上必要な内容は、続きを聞きたいか一言確認する
 ・答え終えたら、整理の流れに戻るための短い一言や質問を続けてよい（続けなくてもよい）
 
 壁打ちルール：
@@ -227,7 +245,8 @@ answerLimitSeconds ルール：
       body: JSON.stringify({
         model: "gpt-5.4",
         // //***変更箇所**** ここから：GPT-5系はtemperature非対応・max_completion_tokensを使用
-        max_completion_tokens: 1000,
+        // 整理&GO！は質問への回答がJSONごと途中で切れないよう上限を広げる
+        max_completion_tokens: isWall5 ? 2500 : 1000,
         // //***変更箇所**** ここまで
         messages: [{ role: "system", content: SYSTEM_PROMPT }, ...trimmedMessages]
       })
@@ -240,6 +259,10 @@ answerLimitSeconds ルール：
 
     const data = await r.json();
     const content = data.choices?.[0]?.message?.content ?? "";
+    // //***変更箇所**** ここから：出力上限で途中終了したことをユーザーに伝える
+    const isTruncated = data.choices?.[0]?.finish_reason === "length";
+    const TRUNCATED_NOTE = "（長くなって途中で切れちゃった。続きが必要なら「続けて」と送ってね）";
+    // //***変更箇所**** ここまで
 
     // //***変更箇所**** ここから：壁打ち時はJSON解釈
     if (isWall5) {
@@ -247,8 +270,14 @@ answerLimitSeconds ルール：
 
       // //***変更箇所**** ここから：JSON形式が崩れても落とさず表示する
       if (!parsed?.reply) {
+        // JSONが途中で切れた場合でも、{"reply": などの中身を見せずに本文だけ表示する
+        const partial = extractPartialReply(content);
+        const fallback = partial
+          ? `${partial.trim()}${isTruncated ? `\n\n${TRUNCATED_NOTE}` : ""}`
+          : content || "うまく整形できなかったけど、もう一度短く整理するね。";
+
         return res.status(200).json({
-          reply: content || "うまく整形できなかったけど、もう一度短く整理するね。",
+          reply: fallback,
           answerLimitSeconds: null
         });
       }
@@ -267,7 +296,7 @@ answerLimitSeconds ルール：
 
     // フリートークなど通常時
     return res.status(200).json({
-      reply: content,
+      reply: isTruncated ? `${content.trim()}\n\n${TRUNCATED_NOTE}` : content,
       answerLimitSeconds: null
     });
     // //***変更箇所**** ここまで
