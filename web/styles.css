@@ -197,22 +197,130 @@ textarea:focus {
 .modalActions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 12px; }
 .closing { opacity: 0.9; }
 
-/* Gate */
+/* Gate：未ログイン時のLP（サービス紹介） */
 .gate {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  display: grid;
-  place-items: center;
   z-index: 10;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: linear-gradient(180deg, #f4efe8 0%, #f5f1e8 40%, #efe6dc 100%);
+  color: #1f2328;
 }
-.gateCard {
-  background: rgba(255, 255, 255, 0.78);
-  border: 1px solid rgba(0, 0, 0, 0.10);
+/* ログイン済みと思われる間はLPを出さない（auth.jsが判定後に解除） */
+html.signedInHint .gate { visibility: hidden; }
+
+.lp {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 16px 40px;
+  line-height: 1.8;
+}
+.lpNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+}
+.lpLogo { font-weight: 700; font-size: 1.2rem; letter-spacing: 0.02em; }
+.lpNavLogin {
+  border: 1px solid rgba(31, 35, 40, 0.2);
+  background: transparent;
+  color: inherit;
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.lpHero { padding: 40px 0 32px; text-align: center; }
+.lpEyebrow {
+  display: inline-block;
+  margin: 0 0 12px;
+  padding: 2px 12px;
+  border-radius: 999px;
+  background: rgba(196, 140, 80, 0.15);
+  color: #8a5a2b;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.lpTitle {
+  margin: 0 0 16px;
+  font-size: clamp(1.6rem, 5.5vw, 2.4rem);
+  line-height: 1.45;
+}
+.lpPhrase { display: inline-block; }
+.lpLead { margin: 0 auto 24px; max-width: 34em; color: #3d4248; text-wrap: pretty; }
+.lpCtas { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.lpBtn {
+  border-radius: 999px;
+  padding: 12px 28px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.lpBtnPrimary { background: #1f2328; color: #fff; }
+.lpBtnPrimary:hover { background: #3a3f45; }
+.lpBtnGhost { background: rgba(255, 255, 255, 0.7); border-color: rgba(31, 35, 40, 0.2); color: #1f2328; }
+.lpNote { margin: 12px 0 0; font-size: 0.85rem; color: #6b6f76; }
+
+.lpSection { padding: 28px 0; border-top: 1px solid rgba(31, 35, 40, 0.08); }
+.lpH2 { margin: 0 0 12px; font-size: 1.25rem; }
+.lpText { margin: 0; }
+
+.lpScenes { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.lpScenes li {
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+
+.lpCards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.lpCard {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(31, 35, 40, 0.08);
   border-radius: 16px;
-  padding: 20px;
-  width: min(360px, 90%);
+  padding: 16px;
+}
+.lpCard h3 { margin: 0 0 6px; font-size: 1.05rem; }
+.lpCard p { margin: 0; font-size: 0.95rem; }
+
+.lpPersonas { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.lpPersonas li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 10px;
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+.lpPersonaIcon { grid-column: 1; grid-row: 1 / span 2; font-size: 1.4rem; align-self: center; }
+.lpPersonas strong, .lpPersonas span:last-child { grid-column: 2; }
+.lpPersonas span:last-child { font-size: 0.9rem; color: #555a60; }
+
+.lpFaq { margin: 0; }
+.lpFaq dt { font-weight: 700; margin-top: 14px; }
+.lpFaq dt:first-child { margin-top: 0; }
+.lpFaq dd { margin: 4px 0 0; color: #3d4248; }
+.lp a { color: #2f5d8a; }
+
+.lpBottomCta { text-align: center; }
+
+.lpFooter {
+  padding: 24px 0 0;
+  border-top: 1px solid rgba(31, 35, 40, 0.08);
+  font-size: 0.85rem;
+  color: #6b6f76;
   text-align: center;
+}
+.lpFooter nav { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.lpFooter p { margin: 12px 0 0; }
+
+@media (max-width: 560px) {
+  .lpCards { grid-template-columns: 1fr; }
+  .lpHero { padding-top: 24px; }
+  .lpCtas .lpBtn { flex: 1 1 100%; }
 }
 .error { color: #c62828; font-size: 12px; margin-top: 8px; }
 .hidden { display: none; }

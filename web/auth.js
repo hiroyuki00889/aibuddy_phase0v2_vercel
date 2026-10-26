@@ -1,6 +1,5 @@
 // Clerkログイン管理
 const gateEl = document.getElementById("gate");
-const clerkSignInEl = document.getElementById("clerkSignIn");
 const logoutBtn = document.getElementById("logoutBtn");
 
 let hasBooted = false;
@@ -18,11 +17,29 @@ function waitForClerk() {
   });
 }
 
+// Clerkの読み込みに失敗・遅延しても、LPが隠れたままにならないようにする
+setTimeout(() => document.documentElement.classList.remove("signedInHint"), 4000);
+
 async function initAuth() {
   const clerk = await waitForClerk();
   await clerk.load();
 
+  // //***変更箇所**** ここから：LPのボタンからClerkの登録・ログイン画面を開く
+  document.querySelectorAll("[data-auth]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (btn.dataset.auth === "sign-up") {
+        clerk.openSignUp();
+      } else {
+        clerk.openSignIn();
+      }
+    });
+  });
+  // //***変更箇所**** ここまで
+
   function render() {
+    // Clerkの判定が出たので、cookieによる仮の非表示を解除する
+    document.documentElement.classList.remove("signedInHint");
+
     if (clerk.user) {
       gateEl.style.display = "none";
 
@@ -33,11 +50,6 @@ async function initAuth() {
     } else {
       hasBooted = false;
       gateEl.style.display = "";
-
-      if (clerkSignInEl && !clerkSignInEl.dataset.mounted) {
-        clerk.mountSignIn(clerkSignInEl);
-        clerkSignInEl.dataset.mounted = "true";
-      }
     }
   }
 

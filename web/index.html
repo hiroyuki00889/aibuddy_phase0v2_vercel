@@ -3,7 +3,22 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>mybo！</title>
+  <title>mybo！ | 対等に話せるAIの相棒</title>
+  <meta name="description" content="mybo！は、悩みも雑談も考えごとも、対等な立場で聞いてくれるAIの相棒です。頭の中を整理して次の一歩を決める「整理&amp;GO！」と、気軽に話せる「フリートーク」の2つのモードで、無料で使えます。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="mybo！" />
+  <meta property="og:title" content="mybo！ | 対等に話せるAIの相棒" />
+  <meta property="og:description" content="悩みも雑談も考えごとも、隣で一緒に聞いてくれるAIの相棒。無料で使えます。" />
+  <meta property="og:url" content="https://www.mybo-ai.app/" />
+  <!-- //***変更箇所**** ここから：ログイン済みの人にLPが一瞬見えないようにする（Clerkのcookieで判定） -->
+  <script>
+    try {
+      if (/(?:^|; )__client_uat(?:_[^=]+)?=[1-9]/.test(document.cookie)) {
+        document.documentElement.classList.add("signedInHint");
+      }
+    } catch (e) {}
+  </script>
+  <!-- //***変更箇所**** ここまで -->
   <link rel="stylesheet" href="./styles.css" />
   <!-- //***変更箇所**** ここから：Clerk読み込み -->
   <script
@@ -19,11 +34,91 @@
   <!-- //***変更箇所**** ここまで -->
 </head>
 <body class="theme-wall">
-  <!-- //***変更箇所**** ここから：合言葉ゲートをClerkログインに置き換え -->
+  <!-- //***変更箇所**** ここから：未ログイン時はログイン画面の代わりにLP（サービス紹介）を表示 -->
   <div id="gate" class="gate">
-    <div class="gateCard">
-      <h2>ログインしてください</h2>
-      <div id="clerkSignIn"></div>
+    <div class="lp">
+      <header class="lpNav">
+        <span class="lpLogo">mybo！</span>
+        <button type="button" class="lpNavLogin" data-auth="sign-in">ログイン</button>
+      </header>
+
+      <section class="lpHero">
+        <p class="lpEyebrow">対等に話せるAIの相棒</p>
+        <h1 class="lpTitle"><span class="lpPhrase">話していると、</span><span class="lpPhrase">誰かと一緒にいる</span><span class="lpPhrase">感じがする。</span></h1>
+        <p class="lpLead">mybo！は、悩みも雑談も考えごとも、隣で一緒に聞いてくれるAIの相棒です。答えを押しつける先生でも、かしこまったカウンセラーでもありません。</p>
+        <div class="lpCtas">
+          <button type="button" class="lpBtn lpBtnPrimary" data-auth="sign-up">無料ではじめる</button>
+          <button type="button" class="lpBtn lpBtnGhost" data-auth="sign-in">ログイン</button>
+        </div>
+        <p class="lpNote">メールアドレスまたはGoogleアカウントで登録できます</p>
+      </section>
+
+      <section class="lpSection">
+        <h2 class="lpH2">こんなときに</h2>
+        <ul class="lpScenes">
+          <li>誰かに話を聞いてほしいけど、相手が思いつかない夜</li>
+          <li>頭の中がごちゃごちゃして、何から手をつければいいか分からない</li>
+          <li>やりたいことはあるのに、最初の一歩が決められない</li>
+          <li>ちょっとした相談や調べものを、気軽に話しながら片づけたい</li>
+        </ul>
+      </section>
+
+      <section class="lpSection">
+        <h2 class="lpH2">2つのモード</h2>
+        <div class="lpCards">
+          <article class="lpCard">
+            <h3>整理&amp;GO！</h3>
+            <p>考えていることを一緒に整理して、次にやることを1つ決めるモード。質問に答えていくうちに、ぼんやりしていた考えが具体的な形になります。時間を区切って集中したいときは、タイマーも使えます。</p>
+          </article>
+          <article class="lpCard">
+            <h3>フリートーク</h3>
+            <p>気軽に何でも話せる、雑談中心のモード。結論を急がず、居心地の良さを優先します。具体的に知りたいことがあれば、ちゃんと答えます。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="lpSection">
+        <h2 class="lpH2">話し方を選べる</h2>
+        <p class="lpText">フリートークでの距離感は、3つのタイプからいつでも切り替えられます。</p>
+        <ul class="lpPersonas">
+          <li><span class="lpPersonaIcon" aria-hidden="true">🌙</span><strong>じっくり寄り添うタイプ</strong><span>ゆっくりペースで、気持ちを丁寧に受け止める</span></li>
+          <li><span class="lpPersonaIcon" aria-hidden="true">☀️</span><strong>気さくで前向きなタイプ</strong><span>テンポよく、明るく気軽に話せる</span></li>
+          <li><span class="lpPersonaIcon" aria-hidden="true">🧭</span><strong>一緒に前へ進むタイプ</strong><span>考えを後押しして、次の一歩を一緒に探す</span></li>
+        </ul>
+      </section>
+
+      <section class="lpSection">
+        <h2 class="lpH2">前回のことを覚えている</h2>
+        <p class="lpText">話し終えたら「今日を閉じる」で、その日の会話を短くまとめて残せます。次に話すときは、mybo！が前回のことを覚えたうえで迎えてくれます。</p>
+      </section>
+
+      <section class="lpSection">
+        <h2 class="lpH2">よくある質問</h2>
+        <dl class="lpFaq">
+          <dt>無料で使えますか？</dt>
+          <dd>はい、現在は無料で使えます。1日に話せる回数には上限があり、日本時間の0時にリセットされます。</dd>
+          <dt>スマートフォンでも使えますか？</dt>
+          <dd>はい。アプリのインストールは不要で、ブラウザからそのまま使えます。</dd>
+          <dt>会話の内容はどう扱われますか？</dt>
+          <dd>AIの返答を作るために、必要な会話内容をAI提供事業者へ送信します。取り扱いの詳細は<a href="/privacy.html">プライバシーポリシー</a>をご覧ください。</dd>
+          <dt>専門的な相談にも乗ってくれますか？</dt>
+          <dd>mybo！は相棒であって、医師やカウンセラーではありません。AIの回答には誤りが含まれることもあるため、医療・法律・お金など大事な判断は専門家にご相談ください。つらい気持ちが強いときは、専門の相談窓口も頼ってください。</dd>
+        </dl>
+      </section>
+
+      <section class="lpSection lpBottomCta">
+        <h2 class="lpH2">まずは一言、話しかけてみてください</h2>
+        <button type="button" class="lpBtn lpBtnPrimary" data-auth="sign-up">無料ではじめる</button>
+      </section>
+
+      <footer class="lpFooter">
+        <nav>
+          <a href="/terms.html">利用規約</a>
+          <a href="/privacy.html">プライバシーポリシー</a>
+          <a href="mailto:aibo.web.contact@gmail.com">お問い合わせ</a>
+        </nav>
+        <p>&copy; 2026 mybo！</p>
+      </footer>
     </div>
   </div>
   <!-- //***変更箇所**** ここまで -->
