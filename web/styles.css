@@ -263,6 +263,21 @@ html.signedInHint .gate { visibility: hidden; }
 .lpBtnPrimary { background: #1f2328; color: #fff; }
 .lpBtnPrimary:hover { background: #3a3f45; }
 .lpBtnGhost { background: rgba(255, 255, 255, 0.7); border-color: rgba(31, 35, 40, 0.2); color: #1f2328; }
+.lpAuthStatus {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 10;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #1f2328;
+  color: #fff;
+  font-size: 0.9rem;
+  text-align: center;
+}
 .lpNote { margin: 12px 0 0; font-size: 0.85rem; color: #6b6f76; }
 
 .lpSection { padding: 28px 0; border-top: 1px solid rgba(31, 35, 40, 0.08); }

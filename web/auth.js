@@ -20,21 +20,52 @@ function waitForClerk() {
 // Clerkの読み込みに失敗・遅延しても、LPが隠れたままにならないようにする
 setTimeout(() => document.documentElement.classList.remove("signedInHint"), 4000);
 
-async function initAuth() {
-  const clerk = await waitForClerk();
+const clerkReady = waitForClerk().then(async (clerk) => {
   await clerk.load();
+  return clerk;
+});
 
-  // //***変更箇所**** ここから：LPのボタンからClerkの登録・ログイン画面を開く
-  document.querySelectorAll("[data-auth]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      if (btn.dataset.auth === "sign-up") {
-        clerk.openSignUp();
-      } else {
-        clerk.openSignIn();
-      }
-    });
-  });
-  // //***変更箇所**** ここまで
+// //***変更箇所**** ここから：LPのボタンからClerkの登録・ログイン画面を開く（読み込み前や失敗時も反応を返す）
+const CLERK_WAIT_MS = 10000;
+const authStatusEl = document.getElementById("lpAuthStatus");
+let isOpeningAuth = false;
+
+function showAuthStatus(message) {
+  authStatusEl.textContent = message;
+  authStatusEl.hidden = !message;
+}
+
+async function openAuth(type) {
+  if (isOpeningAuth) return;
+  isOpeningAuth = true;
+  showAuthStatus("読み込み中です…");
+
+  try {
+    const clerk = await Promise.race([
+      clerkReady,
+      new Promise((_, reject) => setTimeout(() => reject(new Error("Clerk load timeout")), CLERK_WAIT_MS)),
+    ]);
+    showAuthStatus("");
+    if (type === "sign-up") {
+      clerk.openSignUp();
+    } else {
+      clerk.openSignIn();
+    }
+  } catch (err) {
+    console.error(err);
+    showAuthStatus("ログイン画面を開けませんでした。広告ブロッカーをオフにするか、別のブラウザでお試しください。");
+  } finally {
+    isOpeningAuth = false;
+  }
+}
+
+document.querySelectorAll("[data-auth]").forEach((btn) => {
+  btn.addEventListener("click", () => openAuth(btn.dataset.auth));
+});
+// //***変更箇所**** ここまで
+
+async function initAuth() {
+  const clerk = await clerkReady;
 
   function render() {
     // Clerkの判定が出たので、cookieによる仮の非表示を解除する
