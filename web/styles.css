@@ -344,6 +344,24 @@ html.signedInHint .gate { visibility: hidden; }
 
 body.theme-wall .bubble { display: none; } /* 念のため（壁打ちでは bubble を使わない想定） */
 
+/* つらさのサインがあったときの相談窓口カード */
+.crisisCard {
+  align-self: stretch;
+  margin: 8px 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(138, 90, 43, 0.25);
+  background: #fffaf2;
+  color: #1f2328;
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+.crisisCard p { margin: 0 0 6px; }
+.crisisCard ul { margin: 0 0 6px; padding-left: 1.2em; }
+.crisisCard a { color: #2f5d8a; font-weight: 600; }
+.crisisTitle { font-weight: 700; }
+.crisisUrgent { margin-bottom: 0; color: #8a2b2b; }
+
 .wallRow{
   max-width: 86%;
   display: grid;

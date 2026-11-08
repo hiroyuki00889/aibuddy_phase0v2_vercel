@@ -8,9 +8,11 @@ import { getClerkUserId } from "../lib/clerkAuth.js";
 import {
   checkAndIncrementDailyChatLimit,
   checkAndIncrementWall5Overage,
+  checkAndIncrementCrisisOverage,
   DAILY_CHAT_LIMIT
 } from "../lib/rateLimit.js";
 import { getPersonaPrompt } from "../lib/personas.js";
+import { CRISIS_PROMPT, detectCrisis, getLatestUserText } from "../lib/crisis.js";
 
 export default async function handler(req, res) {
   const userId = await getClerkUserId(req);
@@ -75,6 +77,8 @@ export default async function handler(req, res) {
   // 整理&GO！（壁打ち）は通常上限に達していても、「その時すでに進行中だったチャット」に限り
   // まとまるまで続けられるよう追加分（DAILY_WALL5_OVERAGE_LIMIT）の範囲で継続を許可する。
   // 上限到達後に新しく始めたチャット（まだAI返答がない＝最初の1通目）には適用しない。
+  // つらさのサインがある発言は、上限で突き放さないよう追加分（DAILY_CRISIS_OVERAGE_LIMIT）の範囲で返答する。
+  const isCrisis = detectCrisis(getLatestUserText(req.body?.messages));
   const rateLimit = await checkAndIncrementDailyChatLimit(userId);
   if (!rateLimit.allowed) {
     const isWall5 = req.body?.mode === "wall5";
@@ -83,11 +87,16 @@ export default async function handler(req, res) {
       Array.isArray(req.body?.messages) &&
       req.body.messages.some((m) => m?.role === "assistant");
 
-    const overage = isContinuingSession ? await checkAndIncrementWall5Overage(userId) : null;
+    const overage = isCrisis
+      ? await checkAndIncrementCrisisOverage(userId)
+      : isContinuingSession
+        ? await checkAndIncrementWall5Overage(userId)
+        : null;
 
     if (!overage?.allowed) {
       return res.status(429).json({
-        error: `1日のメッセージ上限（${DAILY_CHAT_LIMIT}回）に達しました。日本時間の0時にリセットされます。`
+        error: `1日のメッセージ上限（${DAILY_CHAT_LIMIT}回）に達しました。日本時間の0時にリセットされます。`,
+        crisis: isCrisis
       });
     }
   }
@@ -230,7 +239,8 @@ answerLimitSeconds ルール：
       !isWall5 ? PERSONA_PROMPT : "",
       isWall5 ? WALL_PROMPT : FREE_TALK_PROMPT,
       wallMeta.trim(),
-      MEMORY_PROMPT
+      MEMORY_PROMPT,
+      isCrisis ? CRISIS_PROMPT : ""
     ]
       .filter(Boolean)
       .join("\n\n");
@@ -254,7 +264,7 @@ answerLimitSeconds ルール：
 
     if (!r.ok) {
       const t = await r.text();
-      return res.status(500).json({ error: `OpenAI error: ${t}` });
+      return res.status(500).json({ error: `OpenAI error: ${t}`, crisis: isCrisis });
     }
 
     const data = await r.json();
@@ -278,30 +288,34 @@ answerLimitSeconds ルール：
 
         return res.status(200).json({
           reply: fallback,
-          answerLimitSeconds: null
+          answerLimitSeconds: null,
+          crisis: isCrisis
         });
       }
       // //***変更箇所**** ここまで
 
+      // つらさのサインがあるときは、回答時間で急かさない
       const safeAnswerLimit =
-        typeof parsed.answerLimitSeconds === "number" && parsed.answerLimitSeconds > 0
+        !isCrisis && typeof parsed.answerLimitSeconds === "number" && parsed.answerLimitSeconds > 0
           ? Math.max(5, Math.min(parsed.answerLimitSeconds, Math.max(5, remainingSeconds || 90)))
           : null;
 
       return res.status(200).json({
         reply: parsed.reply,
-        answerLimitSeconds: safeAnswerLimit
+        answerLimitSeconds: safeAnswerLimit,
+        crisis: isCrisis
       });
     }
 
     // フリートークなど通常時
     return res.status(200).json({
       reply: isTruncated ? `${content.trim()}\n\n${TRUNCATED_NOTE}` : content,
-      answerLimitSeconds: null
+      answerLimitSeconds: null,
+      crisis: isCrisis
     });
     // //***変更箇所**** ここまで
   } catch (e) {
-    return res.status(500).json({ error: e.message });
+    return res.status(500).json({ error: e.message, crisis: isCrisis });
   }
   
 }

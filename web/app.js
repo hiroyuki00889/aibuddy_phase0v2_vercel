@@ -152,6 +152,70 @@ function addBubble(text, who, options = {}) {
   return { row: div, timerEl: null };
 }
 
+// //***変更箇所**** ここから：つらさのサインがあったときに相談窓口を添える（1つの会話で1回まで）
+const CRISIS_LINES = [
+  { name: "#いのちSOS", detail: "24時間・無料", tel: "0120-061-338" },
+  { name: "よりそいホットライン", detail: "24時間・無料", tel: "0120-279-338" },
+  { name: "いのちの電話", detail: "毎日16〜21時・無料", tel: "0120-783-556" }
+];
+
+function addCrisisSupportCard() {
+  if (chatEl.querySelector(".crisisCard")) return;
+
+  const card = document.createElement("div");
+  card.className = "crisisCard";
+  card.setAttribute("role", "note");
+
+  const title = document.createElement("p");
+  title.className = "crisisTitle";
+  title.textContent = "ひとりで抱えなくて大丈夫";
+  card.appendChild(title);
+
+  const lead = document.createElement("p");
+  lead.textContent = "つらい気持ちは、専門の人に話してみることもできます。匿名で相談できます。";
+  card.appendChild(lead);
+
+  const list = document.createElement("ul");
+  for (const line of CRISIS_LINES) {
+    const item = document.createElement("li");
+    const link = document.createElement("a");
+    link.href = `tel:${line.tel.replace(/-/g, "")}`;
+    link.textContent = `${line.name} ${line.tel}`;
+    item.appendChild(link);
+    item.appendChild(document.createTextNode(`（${line.detail}）`));
+    list.appendChild(item);
+  }
+
+  const chatItem = document.createElement("li");
+  const chatLink = document.createElement("a");
+  chatLink.href = "https://talkme.jp/";
+  chatLink.target = "_blank";
+  chatLink.rel = "noopener";
+  chatLink.textContent = "あなたのいばしょ";
+  chatItem.appendChild(chatLink);
+  chatItem.appendChild(document.createTextNode("（チャット・24時間・無料）"));
+  list.appendChild(chatItem);
+  card.appendChild(list);
+
+  const more = document.createElement("p");
+  const moreLink = document.createElement("a");
+  moreLink.href = "https://www.mhlw.go.jp/mamorouyokokoro/";
+  moreLink.target = "_blank";
+  moreLink.rel = "noopener";
+  moreLink.textContent = "ほかの相談窓口（厚生労働省）";
+  more.appendChild(moreLink);
+  card.appendChild(more);
+
+  const urgent = document.createElement("p");
+  urgent.className = "crisisUrgent";
+  urgent.textContent = "いま命の危険があるときは、迷わず119番に電話してください。";
+  card.appendChild(urgent);
+
+  chatEl.appendChild(card);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+// //***変更箇所**** ここまで
+
 function setBusy(isBusy) {
   sendBtn.disabled = isBusy;
   inputEl.disabled = isBusy;
@@ -216,6 +280,9 @@ async function apiChat() {
     console.error("apiChat failed:", res.status, text);
     const err = new Error(`apiChat failed: ${res.status} ${text}`);
     err.status = res.status;
+    try {
+      err.crisis = JSON.parse(text)?.crisis === true;
+    } catch {}
     throw err;
     // //***変更箇所**** ここまで
   }
@@ -580,6 +647,8 @@ async function send() {
     }
     // //***変更箇所**** ここまで
 
+    if (data?.crisis) addCrisisSupportCard();
+
   } catch (e) {
     // //***変更箇所**** ここから：1日の利用上限時は専用メッセージを表示
     const message =
@@ -587,6 +656,7 @@ async function send() {
         ? "今日はたくさんお話できたね。また明日、続きを聞かせてね。"
         : "ごめんね、今はうまく話せないみたい。少しだけ時間をおいて、もう一度試してみて。";
     addBubble(message, "ai");
+    if (e?.crisis) addCrisisSupportCard();
     // //***変更箇所**** ここまで
   } finally {
     setBusy(false);
