@@ -1070,10 +1070,27 @@ body.theme-dusk .header {
   }
 }
 
+/* スマホでは3列だと文字が縦に折れるため、上段に2つ・下段に「今日を閉じる」を置く */
 @media (max-width: 560px) {
   .headerActions {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .headerActionItem {
+    grid-column: 1 / -1;
+  }
+
+  .aboutBtn,
+  .myPageBtn,
+  .sessionEndBtn {
+    padding: 12px 10px;
+    white-space: nowrap;
+  }
+
+  .headerActionCaption {
+    white-space: normal;
   }
 }
 /* //***変更箇所**** ここまで */
