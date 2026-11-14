@@ -237,6 +237,7 @@ async function apiGetLatestMemory(targetMode = mode) {
   const res = await fetch(`${API_BASE}/api/memory/latest?mode=${encodeURIComponent(targetMode)}`, {
   // //***変更箇所**** ここまでs
     method: "GET",
+    cache: "no-store",
     headers: {
       ...authHeaders
     }
@@ -854,6 +855,11 @@ closeBtn.addEventListener("click", () => {
 // //***変更箇所**** ここから：マイページモーダル制御
 function openMyPage() {
   myPageModal?.classList.remove("hidden");
+
+  // 「今日を閉じる」で新しく覚えた内容も出るよう、開くたびに読み直す
+  if (document.getElementById("page-memory")?.classList.contains("active")) {
+    loadMemoryPanel();
+  }
 }
 
 function closeMyPage() {
