@@ -1020,16 +1020,40 @@ body.theme-dusk .header {
     max-height: 86vh;
   }
 
+  /* タイトルの下にボタンを横並びにして、高さを抑える */
   .myPageHeader {
-    flex-direction: column;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
   }
 
-  .myPageCloseBtn {
-    width: 100%;
+  .myPageHeader > div {
+    flex: 1 1 100%;
+  }
+
+  .myPageHeader .btn {
+    padding: 8px 14px;
+  }
+
+  /* メニューは小さなタブにして、折り返して並べる */
+  .myPageGrid {
+    gap: 12px;
+    padding-top: 12px;
   }
 
   .myPageMenu {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .myPageMenuItem {
+    width: auto;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    white-space: nowrap;
   }
 }
 /* //***変更箇所**** ここまで */
