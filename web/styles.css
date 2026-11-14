@@ -759,6 +759,49 @@ body.theme-dusk .header {
   margin: 0 0 10px;
 }
 
+/* 覚えていること（記憶の確認と削除） */
+.memoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.memoryItem {
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.myPagePanel .memoryItem h4 {
+  margin: 0 0 2px;
+}
+
+.myPagePanel .memoryDate {
+  margin-bottom: 8px;
+  color: #6b6f76;
+  font-size: 12px;
+}
+
+.memoryDeleteBtn,
+.memoryDeleteAllBtn {
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  color: #a33a2b;
+}
+
+.myPagePanel .memoryEmpty {
+  color: #6b6f76;
+}
+
+.myPagePanel .memoryStatus {
+  min-height: 1.5em;
+  margin-top: 10px;
+  color: #6b6f76;
+}
+
 /* //***変更箇所**** ここから：話し方タイプ（ペルソナ）選択（ヘッダーのmybo！アイコン→プルダウン） */
 .personaPickerBox {
   position: relative;
@@ -904,7 +947,7 @@ body.theme-dusk .header {
 
   .myPageMenu {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
   .myPageMenuItem {

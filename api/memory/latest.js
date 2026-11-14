@@ -1,4 +1,4 @@
-import { readLatestMemory } from "../../lib/memoryStore.js";
+import { deleteLatestMemory, readLatestMemory } from "../../lib/memoryStore.js";
 import { getClerkUserId } from "../../lib/clerkAuth.js";
 
 export default async function handler(req, res) {
@@ -7,6 +7,24 @@ export default async function handler(req, res) {
   if (!userId) {
     return res.status(401).json({ error: "Unauthorized" });
   }
+
+  // //***変更箇所**** ここから：マイページから記憶を削除する（mode=free / wall5 / all）
+  if (req.method === "DELETE") {
+    const target = req.query?.mode;
+    const modes = target === "all" ? ["free", "wall5"] : target === "free" || target === "wall5" ? [target] : null;
+
+    if (!modes) {
+      return res.status(400).json({ error: "mode must be free, wall5, or all" });
+    }
+
+    try {
+      await Promise.all(modes.map((m) => deleteLatestMemory(userId, m)));
+      return res.status(200).json({ deleted: modes });
+    } catch (e) {
+      return res.status(500).json({ error: e.message });
+    }
+  }
+  // //***変更箇所**** ここまで
 
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });

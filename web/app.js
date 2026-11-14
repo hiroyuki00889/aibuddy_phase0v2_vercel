@@ -230,11 +230,11 @@ function getWallRemainingSeconds() {
 }
 
 //memory取得API
-async function apiGetLatestMemory() {
+async function apiGetLatestMemory(targetMode = mode) {
   const authHeaders = await window.getClerkAuthHeaders();
 
-  // //***変更箇所**** ここから：現在のmodeをqueryで渡す
-  const res = await fetch(`${API_BASE}/api/memory/latest?mode=${encodeURIComponent(mode)}`, {
+  // //***変更箇所**** ここから：現在のmodeをqueryで渡す（マイページでは対象モードを指定）
+  const res = await fetch(`${API_BASE}/api/memory/latest?mode=${encodeURIComponent(targetMode)}`, {
   // //***変更箇所**** ここまでs
     method: "GET",
     headers: {
@@ -868,7 +868,144 @@ function switchMyPage(pageName) {
   myPagePanels.forEach((panel) => {
     panel.classList.toggle("active", panel.id === `page-${pageName}`);
   });
+
+  if (pageName === "memory") {
+    loadMemoryPanel();
+  }
 }
+
+// //***変更箇所**** ここから：覚えていること（記憶の確認と削除）
+const memoryListEl = document.getElementById("memoryList");
+const memoryDeleteAllBtn = document.getElementById("memoryDeleteAllBtn");
+const memoryStatusEl = document.getElementById("memoryStatus");
+
+const MEMORY_MODE_LABELS = { wall5: "整理&GO！", free: "フリートーク" };
+
+async function apiDeleteMemory(target) {
+  const authHeaders = await window.getClerkAuthHeaders();
+  const res = await fetch(`${API_BASE}/api/memory/latest?mode=${encodeURIComponent(target)}`, {
+    method: "DELETE",
+    headers: { ...authHeaders }
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text);
+  }
+
+  return await res.json();
+}
+
+function setMemoryStatus(message) {
+  memoryStatusEl.textContent = message;
+}
+
+function formatMemoryDate(isoString) {
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" });
+}
+
+function addMemoryLine(parent, label, text) {
+  if (!text) return;
+  const p = document.createElement("p");
+  const strong = document.createElement("strong");
+  strong.textContent = `${label}：`;
+  p.appendChild(strong);
+  p.appendChild(document.createTextNode(text));
+  parent.appendChild(p);
+}
+
+function renderMemoryList(memories) {
+  memoryListEl.innerHTML = "";
+  const savedModes = Object.keys(memories).filter((m) => memories[m]?.summary);
+
+  if (savedModes.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "memoryEmpty";
+    empty.textContent = "まだ覚えていることはありません。";
+    memoryListEl.appendChild(empty);
+  }
+
+  for (const m of savedModes) {
+    const memory = memories[m];
+    const item = document.createElement("div");
+    item.className = "memoryItem";
+
+    const title = document.createElement("h4");
+    title.textContent = MEMORY_MODE_LABELS[m];
+    item.appendChild(title);
+
+    const dateText = formatMemoryDate(memory.created_at);
+    if (dateText) {
+      const date = document.createElement("p");
+      date.className = "memoryDate";
+      date.textContent = `${dateText}に覚えたこと`;
+      item.appendChild(date);
+    }
+
+    addMemoryLine(item, "前回の話", memory.summary);
+    if (m === "wall5") {
+      addMemoryLine(item, "次の一手", memory.next_action);
+    } else {
+      addMemoryLine(item, "mybo！のひとこと", memory.companion_note);
+    }
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "btn ghost memoryDeleteBtn";
+    deleteBtn.textContent = "これを忘れてもらう";
+    deleteBtn.addEventListener("click", () => deleteMemory(m));
+    item.appendChild(deleteBtn);
+
+    memoryListEl.appendChild(item);
+  }
+
+  memoryDeleteAllBtn.classList.toggle("hidden", savedModes.length < 2);
+}
+
+async function loadMemoryPanel() {
+  setMemoryStatus("読み込み中です…");
+  memoryListEl.innerHTML = "";
+  memoryDeleteAllBtn.classList.add("hidden");
+
+  try {
+    const [wall5Res, freeRes] = await Promise.all([
+      apiGetLatestMemory("wall5"),
+      apiGetLatestMemory("free")
+    ]);
+    renderMemoryList({
+      wall5: wall5Res?.latest_memory ?? null,
+      free: freeRes?.latest_memory ?? null
+    });
+    setMemoryStatus("");
+  } catch (e) {
+    console.error("memory panel load failed:", e);
+    setMemoryStatus("読み込めませんでした。時間をおいて、もう一度お試しください。");
+  }
+}
+
+async function deleteMemory(target) {
+  const label = target === "all" ? "すべての記憶" : `${MEMORY_MODE_LABELS[target]}の記憶`;
+  if (!confirm(`${label}を消します。消した記憶は元に戻せません。よろしいですか？`)) return;
+
+  setMemoryStatus("消しています…");
+  try {
+    await apiDeleteMemory(target);
+    // 今のモードの記憶を消したら、この後の会話にも使わないようにする
+    if (target === "all" || target === mode) {
+      latestMemory = null;
+    }
+    await loadMemoryPanel();
+    setMemoryStatus(`${label}を忘れました。`);
+  } catch (e) {
+    console.error("memory delete failed:", e);
+    setMemoryStatus("消せませんでした。時間をおいて、もう一度お試しください。");
+  }
+}
+
+memoryDeleteAllBtn?.addEventListener("click", () => deleteMemory("all"));
+// //***変更箇所**** ここまで
 
 aboutBtn?.addEventListener("click", () => {
   openMyPage();
