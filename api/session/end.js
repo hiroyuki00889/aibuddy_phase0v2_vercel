@@ -40,6 +40,19 @@ export default async function handler(req, res) {
     const trimmedMessages = trimHistory(messages, MAX_SUMMARY_HISTORY_MESSAGES);
     // //***変更箇所**** ここまで
 
+    // //***変更箇所**** ここから：整理&GO！の返答はJSON（{"reply": ...}）で履歴に入っているため本文だけに戻す
+    // そのまま渡すと、AIが終了処理ではなく {"reply": ...} の形で会話の続きを返してしまうことがある
+    const conversation = trimmedMessages.map((m) => {
+      if (m?.role !== "assistant" || typeof m.content !== "string") return m;
+      try {
+        const parsed = JSON.parse(m.content);
+        return typeof parsed?.reply === "string" ? { ...m, content: parsed.reply } : m;
+      } catch {
+        return m;
+      }
+    });
+    // //***変更箇所**** ここまで
+
     const isWall5 = mode === "wall5";
 
     const SYSTEM_PROMPT = `
@@ -72,6 +85,8 @@ JSON形式:
   - 今回の中心話題や整理された内容が分かるようにする
   - 評価しない
   - 監視感を出さない
+  - 次回「前回は「〜」」と引用して表示するので、文末は「〜という話」「〜したいと思っている」のような言い切りにする（「という話」は最後に1回だけ使う）
+  - 「〜と整理しました」「〜について話しました」「〜が進みました」のような、終わった会話を報告する言い方はしない
 
 - next_action:
   - 次にやる最小ステップを1つだけ
@@ -114,7 +129,8 @@ JSON形式:
           { role: "system", content: SYSTEM_PROMPT },
           { role: "system", content: MODE_CONTEXT },
           ...(PERSONA_CONTEXT ? [{ role: "system", content: PERSONA_CONTEXT }] : []),
-          ...trimmedMessages
+          ...conversation,
+          { role: "system", content: "以上の会話は終わりました。会話の続きは書かず、指定のJSON形式（closing_message・summary・next_action・companion_note）だけを出力してください。" }
         ]
       })
     });
