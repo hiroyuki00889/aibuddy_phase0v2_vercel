@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "eval": "node --env-file=.env --experimental-test-module-mocks --no-warnings scripts/eval-prompts.mjs"
+  },
   "dependencies": {
     "@clerk/backend": "^3.16.1",
     "@upstash/redis": "^1.37.0",
